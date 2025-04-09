@@ -1,0 +1,139 @@
+arch:
+  CRITIC_HAS_ACT_IND: False
+  ACTIVATION:
+    actor: Sin
+    critic: Sin
+  APPEND_DIM: 0
+  LATENT_DIM: 0
+  DIM_LIST:
+    actor_0:
+      - 128
+      - 128
+      - 128
+    actor_1:
+      - 128
+      - 128
+      - 128
+    critic:
+      - 128
+      - 128
+      - 128
+  ACTION_RANGE:
+    - [ [-1, 1],
+        [-1, 1]
+      ]
+    - [ [-0.05, 0.05],
+        [-0.05, 0.05],
+        [0, 0.15]
+      ]
+  ACTION_DIM: [2, 3]
+  OBS_DIM:
+    actor_0: 180
+    actor_1: 180
+    critic: 180
+
+environment:
+  SEED: 0
+  NUM_AGENTS: 2
+  TIMEOUT: 300
+  END_CRITERION: failure
+
+agent:
+  DYN: PointMass
+  FOOTPRINT: none
+  VERBOSE: False
+  GUI: False
+  GUI_IMAGINARY: False
+  DT: 0.1
+  APPLY_FORCE: False
+  REPLACE_ADV_WITH_DR: False
+  RESET_CRITERION: failure
+  ACTION_RANGE:
+    CTRL:
+      - [-1, 1]
+      - [-1, 1]
+    DSTB:
+      - [-0.05, 0.05]
+      - [-0.05, 0.05]
+      - [0, 0.15]
+  AGENT_ID: ego
+  NUM_SEGMENT: 1
+  PRETRAIN_CTRL:
+  PRETRAIN_DSTB:
+
+solver:
+  USE_WANDB: True
+  PROJECT_NAME: point-mass-test
+  NAME: point_isaacs
+  OUT_FOLDER: train_result/point_spirit
+  CHECK_OPT_FREQ: 20
+  SAVE_TOP_K: [10, 10]
+  # train
+  NUM_CPUS: 1
+  MAX_STEPS: 20000000
+  MEMORY_CAPACITY: 1000000
+  MIN_STEPS_B4_OPT: 100000
+  OPTIMIZE_FREQ: 10000
+  UPDATE_PER_OPT: [2000, 1000]  # ctrl ratio = 2
+  CTRL_OPT_FREQ: 10
+  BATCH_SIZE: 256
+  MIN_STEPS_B4_EXPLOIT: 0
+  # warmup
+  WARMUP_ACTION_RANGE:
+    CTRL:
+      - [-1, 1]
+      - [-1, 1]
+    DSTB:
+      - [-0.05, 0.05]
+      - [-0.05, 0.05]
+      - [0, 0.15]
+  ROLLOUT_END_CRITERION: reach-avoid
+  VENV_DEVICE: cpu
+  HISTORY_WEIGHT: 0.
+  DSTB_SAMPLE_TYPE: softmax
+  INIT_DSTB_SAMPLE_TYPE: strongest
+  DSTB_SAMPLE_CUR_WEIGHT: 0.2
+  CHECK_NOM: False
+  NUM_ENVS: 1
+
+update:
+  MAX_MODEL: 20
+  ALPHA: [0.1, 0.1]
+  LEARN_ALPHA: True
+  BATCH_SIZE: 256
+  DEVICE: cpu
+  OPT_TYPE: AdamW
+  GAMMA: 0.9
+  GAMMA_DECAY: 0.1
+  GAMMA_END: 0.999
+  GAMMA_PERIOD: 2000000
+  GAMMA_SCHEDULE: True
+  LATENT_DIM: 0
+  LR_A: 0.0001
+  LR_C: 0.0001
+  LR_Al: [0.000125, 0.0000125]
+  LR_A_END: 0.0001
+  LR_C_END: 0.0001
+  LR_Al_END: 0.00005
+  LR_A_PERIOD: 50000
+  LR_C_PERIOD: 50000
+  LR_Al_PERIOD: 100000
+  LR_A_DECAY: 0.9
+  LR_C_DECAY: 0.9
+  LR_Al_DECAY: 0.9
+  LR_A_SCHEDULE: False
+  LR_C_SCHEDULE: False
+  LR_Al_SCHEDULE: False
+  MODE: reach-avoid
+  TAU: 0.01
+  TERMINAL_TYPE: max
+  EVAL: False
+  UPDATE_PERIOD: [2, 2]
+  ACTOR_TYPE: [min, max]
+
+eval:
+  MODEL_TYPE: [highest, highest]
+  STEP: [0, 0]
+  EVAL_TIMEOUT: 1000
+  IMAGINARY_HORIZON: 300
+  NUM_EVAL_TRAJ: 100

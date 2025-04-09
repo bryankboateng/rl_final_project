@@ -17,9 +17,14 @@ import torch as th
 from collections import deque, namedtuple
 import os
 import glob
-from typing import Optional
 import torch
 import wandb
+from typing import List, Callable, Any, Optional, Dict, Union
+import numpy as np
+import torch
+from simulators.vec_env.vec_env import VecEnvBase
+from simulators import BaseEnv, BaseZeroSumEnv
+import pickle
 
 
 
@@ -37,6 +42,105 @@ def save_model(model: torch.nn.Module, step: int, model_folder: str, types: str,
       os.remove(os.path.join(model_folder, '{}-{}.pth'.format(types, min_step)))
   model_path = os.path.join(model_folder, '{}-{}.pth'.format(types, step))
   torch.save(model.state_dict(), model_path)
+
+
+
+# required by train_isaac
+def evaluate_zero_sum(
+    env: BaseZeroSumEnv, rollout_env: Union[BaseZeroSumEnv, VecEnvBase],
+    adversary: Callable[[np.ndarray, np.ndarray, Any],
+                        np.ndarray], value_fn: Callable[[np.ndarray, Optional[Union[np.ndarray, torch.Tensor]]],
+                                                        np.ndarray], num_trajectories: int, end_criterion: str,
+    timeout: int, reset_kwargs_list: Optional[Union[List[Dict], Dict]] = None,
+    rollout_step_callback: Optional[Callable] = None, rollout_episode_callback: Optional[Callable] = None,
+    visualize_callback: Optional[Callable] = None, fig_path: Optional[str] = None, **kwargs
+) -> Dict:
+
+  if isinstance(rollout_env, BaseZeroSumEnv):
+    _, results, length = rollout_env.simulate_trajectories(
+        num_trajectories=num_trajectories, T_rollout=timeout, end_criterion=end_criterion, adversary=adversary,
+        reset_kwargs_list=reset_kwargs_list, rollout_step_callback=rollout_step_callback,
+        rollout_episode_callback=rollout_episode_callback, use_tqdm=True, **kwargs
+    )
+  else:
+    _, results, length = rollout_env.simulate_trajectories_zs(
+        num_trajectories=num_trajectories, T_rollout=timeout, end_criterion=end_criterion, adversary=adversary,
+        reset_kwargs_list=reset_kwargs_list, rollout_step_callback=rollout_step_callback,
+        rollout_episode_callback=rollout_episode_callback, use_tqdm=True, **kwargs
+    )
+
+  safe_rate = np.sum(results != -1) / num_trajectories
+  info = {"safety": safe_rate, "ep_length": np.mean(length)}
+  if end_criterion == "reach-avoid":
+    ra_rate = np.sum(results == 1) / num_trajectories
+    info["reach-avoid"] = ra_rate
+
+  if visualize_callback is not None:
+    visualize_callback(env, value_fn, adversary=adversary, fig_path=fig_path)
+  return info
+
+
+def get_model_index(parent_dir, model_type, step: Optional[int] = None, type="mean_critic", cutoff=0, autocutoff=None):
+  """_summary_
+
+  Args:
+      parent_dir (str): dir of where the result is
+      model_type (str): type of model ("highest", "safest", "worst", "manual")
+      step (int, optional): step to load in manual
+      type (str, optional): model type to read index from [mean_critic, adv_critic, dstb, ctrl]. Defaults to "mean_critic".
+      cutoff (int, optional): Model cutoff, will not consider any model index that's lower than this value. Defaults to None.
+      autocutoff (float, optional): Auto calculate where to cutoff by taking percentage of the horizon. Defaults to None
+
+  Raises:
+      ValueError: _description_
+
+  Returns:
+      _type_: _description_
+  """
+  print("WARNING: using model index stored in {}".format(type))
+  model_dir = os.path.join(parent_dir, "model", type)
+  print(model_dir)
+  chosen_run_iter = None
+  print("\tModel type: {}".format(model_type))
+
+  if model_type == "highest":
+    model_list = os.listdir(model_dir)
+    highest_number = sorted([int(a.split("-")[1].split(".")[0]) for a in model_list])[-1]
+    print("\t\tHighest training number: {}".format(highest_number))
+    chosen_run_iter = highest_number
+
+  elif model_type == "safest" or model_type == "worst":
+    # get the run with the best result from train.pkl
+    train_log_path = os.path.join(parent_dir, "train.pkl")
+    with open(train_log_path, "rb") as log:
+      train_log = pickle.load(log)
+    data = np.array(sorted(train_log["pq_top_k"]))
+    if autocutoff is not None:
+      print("\t\t\tAuto cutting off with {} ratio".format(autocutoff))
+      cutoff = max(data[:, 1]) * autocutoff
+    data = data[data[:, 1] > cutoff]
+    print("\t\t\tTaking {} of max value {}".format(autocutoff, max(data[:, 1])))
+
+    if model_type == "safest":
+      safe_rate, best_iteration = data[-1]
+      print("\t\tBest training iteration: {}, safe rate: {}".format(best_iteration, safe_rate))
+    else:
+      safe_rate, best_iteration = data[0]
+      print("\t\tWorst training iteration: {}, safe rate: {}".format(best_iteration, safe_rate))
+    chosen_run_iter = best_iteration
+
+  elif model_type == "manual":
+    model_list = os.listdir(model_dir)
+    iter_list = [int(a.split("-")[1].split(".")[0]) for a in model_list]
+    if step in iter_list:
+      print("\t\tManual pick a model iteration: {}".format(step))
+      chosen_run_iter = step
+    else:
+      raise ValueError("Cannot find iteration {} in list of runs".format(step))
+
+  assert chosen_run_iter is not None, "Something is wrong, cannot find the chosen run, check evaluation config"
+
+  return int(chosen_run_iter), os.path.join(parent_dir, "model")
 
 
 class _scheduler(object):
