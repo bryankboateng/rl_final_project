@@ -125,7 +125,24 @@ def get_mlp_input(
     # 5. Keep track if obsrv was originally numpy (np_input = True/False).
     # 6. Keep track of how many dimensions you had to add (num_extra_dim).
     # 7. Return (processed_input, np_input, num_extra_dim).
-    raise NotImplementedError("Fill in get_mlp_input logic here.")
+    if isinstance(obsrv, np.ndarray):
+        obsrv = torch.FloatTensor(obsrv).to(device)
+        np_input = True
+        
+        
+    if len(obsrv.shape) == 1:
+        obsrv = obsrv.unsqueeze(0)
+        num_extra_dim = 1
+        
+    if action is not None:
+        if isinstance(action, np.ndarray):
+            action = torch.FloatTensor(action).to(device)
+        obsrv = torch.concat((obsrv, action), dim=-1)
+    
+    
+        
+    
+    return obsrv, np_input, num_extra_dim
 
 
 ########################################################
@@ -164,7 +181,16 @@ class TwinnedQNetwork(nn.Module):
         # 2. Duplicate it for self.Q2 (e.g. copy.deepcopy).
         # 3. Move networks to cuda if device is appropriate and store device as self.device = torch.device(device).
         # 4. If verbose, print layer info, etc.
-        raise NotImplementedError("Fill in TwinnedQNetwork initialization.")
+        
+        self.Q1 = MLP([obsrv_dim + action_dim] + mlp_dim + [1], activation_type=activation_type, out_activation_type='Identity', verbose=verbose)
+        self.Q2 = copy.deepcopy(self.Q1)
+        if device == 'cuda':
+            self.Q1.to(device)
+            self.Q2.to(device)
+        self.device = torch.device(device)
+        if verbose:
+            print(f"Q1: {self.Q1}")
+            print(f"Q2: {self.Q2}")
 
 
     def forward(
@@ -190,14 +216,18 @@ class TwinnedQNetwork(nn.Module):
         # After forward pass, we can "undo" those expansions with squeeze()
         # and convert back to np if needed.
 
-        # HINT:
-        # 1. Use get_mlp_input(...) => (processed_input, np_input, num_extra_dim).
-        # 2. Q1_val = self.Q1(processed_input).
-        # 3. Q2_val = self.Q2(processed_input).
-        # 4. Squeeze dims if num_extra_dim > 0.
-        # 5. If np_input, detach+cpu => numpy.
-        # 6. return q1, q2
-        raise NotImplementedError("Fill in TwinnedQNetwork forward pass.")
+        processed_input, np_input, num_extra_dim = get_mlp_input(obsrv, self.device, action)
+        q1 = self.Q1(processed_input)
+        q2 = self.Q2(processed_input)
+        if num_extra_dim > 0:
+            q1 = q1.squeeze(0)
+            q2 = q2.squeeze(0)
+        if np_input:
+            q1 = q1.detach().cpu().numpy()
+            q2 = q2.detach().cpu().numpy()
+        
+        return q1, q2
+
 
 
 ########################################################
@@ -240,7 +270,23 @@ class GaussianPolicy(nn.Module):
         # 3. Convert action_range to torch, compute self.scale & self.bias => for mapping [-1,1] to [min,max].
         # 4. Set self.LOG_STD_MAX, self.LOG_STD_MIN, self.eps for numeric stability.
         # 5. Store device.
-        raise NotImplementedError("Fill in GaussianPolicy initialization.")
+        
+        self.mean = MLP([obsrv_dim] + mlp_dim + [action_dim], activation_type=activation_type, out_activation_type='Identity', verbose=verbose)
+        self.log_std = MLP([obsrv_dim] + mlp_dim + [action_dim], activation_type=activation_type, out_activation_type='Identity', verbose=verbose)
+        
+        self.action_dim = action_dim
+        self.action_range = action_range
+        self.device = torch.device(device)
+        self.a_min = torch.FloatTensor(action_range[:, 0])
+        self.a_max = torch.FloatTensor(action_range[:, 1])
+        self.scale = (self.a_max - self.a_min) / 2
+        self.bias = (self.a_max + self.a_min) / 2
+        
+        self.LOG_STD_MAX = 2
+        self.LOG_STD_MIN = -20
+        self.eps = 1e-6
+        
+        
 
 
     def forward(
@@ -274,7 +320,18 @@ class GaussianPolicy(nn.Module):
         # 5. Possibly squeeze dimension.
         # 6. Possibly convert to numpy.
         # 7. return scaled_action
-        raise NotImplementedError("Fill in GaussianPolicy forward (deterministic).")
+        
+        processed_input, np_input, num_extra_dim = get_mlp_input(obsrv, self.device)
+        a_unbounded = self.mean(processed_input)
+        
+        a_tanh = torch.tanh(a_unbounded)
+        scaled_action = a_tanh * self.scale + self.bias
+        if num_extra_dim > 0:
+            scaled_action = scaled_action.squeeze(0)
+        if np_input:
+            scaled_action = scaled_action.detach().cpu().numpy()
+        return scaled_action
+
 
 
     def sample(
@@ -310,7 +367,23 @@ class GaussianPolicy(nn.Module):
         # 7. Compute log_prob. Sum over action dimensions.
         # 8. Squeeze dimension if needed. Convert to np if needed.
         # 9. return (action, log_prob)
-        raise NotImplementedError("Fill in GaussianPolicy sample (stochastic).")
+        
+        processed_input, np_input, num_extra_dim = get_mlp_input(obsrv, self.device)
+        mean_val = self.mean(processed_input)
+        log_std_val = self.log_std(processed_input)
+        log_std_val = torch.clamp(log_std_val, self.LOG_STD_MIN, self.LOG_STD_MAX)
+        
+        dist = torch.distributions.Normal(mean_val, torch.exp(log_std_val))
+        xt = dist.rsample()
+        yt = torch.tanh(xt)  # y = tanh(x) --> p(y) = p(tanh(x)) * |d(tanh(x))/dx|^(-1) transformation rule for probability
+        action = self.scale * yt + self.bias
+        log_prob = dist.log_prob(xt)
+        log_prob -= torch.log(self.max_action * (1 - yt.pow(2)) + self.eps)  #d[tanh(x)]/dx = sech^2(x) = 1 - tanh^2(x)
+        log_prob = log_prob.sum(1, keepdim=True)
+        
+        return action, log_prob
+        
+
 
 
     def to(self, device: Union[str, torch.device]):
@@ -321,7 +394,13 @@ class GaussianPolicy(nn.Module):
         # HINT:
         # 1. self.device = device
         # 2. Move self.a_max, self.a_min, self.scale, self.bias => device
-        raise NotImplementedError("Implement moving constants to new device.")
+        
+        self.device = device
+        self.a_min = self.a_min.to(device)
+        self.a_max = self.a_max.to(device)
+        self.scale = self.scale.to(device)
+        self.bias = self.bias.to(device)
+
 
     @property
     def is_stochastic(self) -> bool:
@@ -448,7 +527,15 @@ class Actor(BaseBlock, BasePolicy):
         # 1. Define action_dim, action_range, actor_type from cfg_arch/cfg.
         # 2. Possibly define self.update_period, if not in evaluation mode.
         # 3. Call self.build_network(...) with relevant params.
-        raise NotImplementedError("Fill in Actor.__init__ logic here.")
+        self.action_dim = cfg_arch.action_dim
+        self.action_range = cfg_arch.action_range
+        self.actor_type = cfg_arch.actor_type
+        
+        if not self.eval:
+            self.update_period = cfg.update_period
+            
+        self.build_network(cfg, cfg_arch, verbose=verbose)
+
 
 
     @property
@@ -456,9 +543,8 @@ class Actor(BaseBlock, BasePolicy):
         """
         Indicates if the underlying net is a stochastic policy.
         """
-        # HINT:
-        # e.g., return self.net.is_stochastic
-        raise NotImplementedError("Return the 'is_stochastic' property from self.net.")
+        return self.net.is_stochastic
+
 
 
     @property
@@ -467,8 +553,8 @@ class Actor(BaseBlock, BasePolicy):
         Returns the current entropy coefficient alpha as exp(log_alpha).
         """
         # HINT:
-        # e.g., return self.log_alpha.exp()
-        raise NotImplementedError("Compute alpha = exp(self.log_alpha).")
+        return self.log_alpha.exp()
+
 
 
     def build_network(self, cfg, cfg_arch, verbose: bool = True):
@@ -482,38 +568,74 @@ class Actor(BaseBlock, BasePolicy):
         # 2. If there's a 'pretrained_path', load network weights except log_std.
         # 3. If self.eval: set net.eval(), freeze parameters, define self.log_alpha, etc.
         #    else: call self.build_optimizer(cfg)
-        raise NotImplementedError("Construct and optionally load a GaussianPolicy here.")
+        self.net = GaussianPolicy(
+            obsrv_dim=cfg_arch.obsrv_dim,
+            mlp_dim=cfg_arch.mlp_dim,
+            action_dim=cfg_arch.action_dim,
+            action_range=self.action_range,
+            activation_type=cfg_arch.activation_type,
+            device=self.device,
+            verbose=verbose
+        )
+        if self.eval:
+            self.net.eval() #what happens when you put a model on self_eval?
+            for _, param in self.net.named_parameters():
+                param.requires_grad = False
+            self.log_alpha = torch.log(torch.FloatTensor([1e-8])).to(self.device)
+        else:
+            self.build_optimizer(cfg)
 
 
     def build_optimizer(self, cfg):
-        """
-        Builds the main optimizer for the actor network (self.net).
-        Also sets up alpha-related parameters and optimizers if needed.
-        """
-        # Typically calls super().build_optimizer(cfg) for shared logic.
-        # Then sets up additional alpha/log_alpha parameters.
-        #
-        # HINT:
-        raise NotImplementedError("Implement the build_optimizer logic, including entropy coeff setups.")
+        super().build_optimizer(cfg)
+
+        # entropy-related parameters
+        
+        #so entropy coefficient is allowed to vary 
+        self.init_alpha = torch.log(torch.FloatTensor([cfg.alpha])).to(self.device)
+        self.min_alpha = torch.log(torch.FloatTensor([cfg.min_alpha])).to(self.device)
+        self.learn_alpha: bool = cfg.learn_alpha
+        self.log_alpha = self.init_alpha.detach().clone()
+        #Target entropy is defined using dimension of action in order for entropy to naturally scale with more dimensions
+        self.target_entropy = torch.tensor(-self.action_dim).to(self.device)
+        # are we learning the entropy coefficient with optimizer and scheduler?? Yes
+        if self.learn_alpha:
+            self.log_alpha.requires_grad = True
+            self.lr_al: float = cfg.lr_al
+            self.lr_al_schedule: bool = cfg.lr_al_schedule
+            self.log_alpha_optimizer = self.opt_cls([self.log_alpha], lr=self.lr_al, weight_decay=0.01)
+        if self.lr_al_schedule:
+            self.lr_al_period: int = cfg.lr_al_period
+            self.lr_al_decay: float = cfg.lr_al_decay
+            self.lr_al_end: float = cfg.lr_al_end
+            self.log_alpha_scheduler = StepLR(
+                self.log_alpha_optimizer, step_size=self.lr_al_period, gamma=self.lr_al_decay
+            )
 
 
     def update_hyper_param(self):
-        """
-        Called periodically (e.g., once per epoch) to update any hyperparameters
-        like learning rate schedules.
-        """
-        # HINT:
-        # 1. Possibly call super().update_hyper_param()
-        # 2. If alpha is learned and lr schedule is enabled, step the scheduler
-        raise NotImplementedError("Add code to step alpha LR schedule or other hyperparameters.")
+        if not self.eval:
+         super().update_hyper_param()
+
+        # Define update rule for the learning rate of entropy coeff?
+        if self.learn_alpha and self.lr_al_schedule:
+            lr = self.log_alpha_optimizer.state_dict()['param_groups'][0]['lr']
+            if lr <= self.lr_al_end:
+                for param_group in self.log_alpha_optimizer.param_groups:
+                    param_group['lr'] = self.lr_al_end
+            else:
+                self.log_alpha_scheduler.step()
 
 
     def reset_alpha(self):
-        """
-        Resets alpha to initial value. Reinitializes alpha optimizer/scheduler if needed.
-        """
-        # HINT:
-        raise NotImplementedError("Implement re-initialization logic for self.log_alpha, optimizer, etc.")
+        self.log_alpha = self.init_alpha.detach().clone()
+        if self.learn_alpha:
+            self.log_alpha.requires_grad = True
+            self.log_alpha_optimizer = self.opt_cls([self.log_alpha], lr=self.lr_al, weight_decay=0.01)
+        if self.lr_al_schedule:
+            self.log_alpha_scheduler = StepLR(
+                self.log_alpha_optimizer, step_size=self.lr_al_period, gamma=self.lr_al_decay
+        )
 
 
     def update(
@@ -556,9 +678,7 @@ class Actor(BaseBlock, BasePolicy):
         # 2. Possibly handle other parameters like alpha, log_alpha, etc.
         raise NotImplementedError("Implement a direct or partial copy of actor.net parameters.")
 
-    ####################################################
-    # GET ACTION
-    ####################################################
+
     def get_action(
         self,
         obsrv: Union[np.ndarray, torch.Tensor],
@@ -589,9 +709,7 @@ class Actor(BaseBlock, BasePolicy):
         # 4. Return (action, dict(t_process=..., status=...)).
         raise NotImplementedError("Implement deterministic action retrieval, including multi-agent synergy.")
 
-    ####################################################
-    # SAMPLE (STOCHASTIC ACTION)
-    ####################################################
+
     def sample(
         self,
         obsrv: Union[np.ndarray, torch.Tensor],
@@ -671,34 +789,70 @@ class Critic(BaseBlock):
         # 2. If pretrained_path is given, load model state (but maybe skip some parts).
         # 3. If eval mode: self.net.eval(), freeze params, set self.target = self.net.
         #    else: create a deepcopy => self.target = copy.deepcopy(self.net) => build_optimizer(cfg).
-        raise NotImplementedError("Construct TwinnedQNetwork and optional target network here.")
+        if not self.eval:
+            self.mode: str = cfg.mode
+            self.update_target_period = int(cfg.update_target_period)
+
+        self.build_network(cfg, cfg_arch, verbose=verbose)
+
+    def build_network(self, cfg, cfg_arch, verbose: bool = True):
+
+        self.net = TwinnedQNetwork(
+            obsrv_dim=cfg_arch.obsrv_dim, mlp_dim=cfg_arch.mlp_dim, action_dim=cfg_arch.action_dim,
+            append_dim=cfg_arch.append_dim, latent_dim=cfg_arch.latent_dim, activation_type=cfg_arch.activation,
+            device=self.device, verbose=verbose
+        )
+
+        # Loads model if specified.
+        if hasattr(cfg_arch, "pretrained_path"):
+            if cfg_arch.pretrained_path is not None:
+                pretrained_path = cfg_arch.pretrained_path
+                self.net.load_state_dict(torch.load(pretrained_path, map_location=self.device))
+                print(f"--> Loads {self.net_name} from {pretrained_path}.")
+
+        if self.eval:
+            self.net.eval()
+            for _, param in self.net.named_parameters():
+                param.requires_grad = False
+            self.target = self.net  # alias
+        else:
+            self.target = copy.deepcopy(self.net)
+            self.build_optimizer(cfg)
 
 
     def build_optimizer(self, cfg):
-        """
-        Builds the optimizer for the critic network (self.net).
-        Also sets up discount factor gamma, schedules, and any other hyperparams.
-        """
-        # HINT:
-        # 1. call super().build_optimizer(cfg) if there's shared logic in BaseBlock.
-        # 2. Setup self.terminal_type, self.tau, self.gamma, and any gamma schedule.
-        # 3. If gamma_schedule: create self.gamma_scheduler = StepLRMargin(...).
-        raise NotImplementedError("Implement Critic's build_optimizer, e.g. for Adam optimizer and gamma schedule.")
+        super().build_optimizer(cfg)
+        self.terminal_type: str = cfg.terminal_type
+        self.tau = float(cfg.tau)
 
+        # Discount factor
+        self.gamma_schedule: bool = cfg.gamma_schedule
+        if self.gamma_schedule:
+            self.gamma_scheduler = StepLRMargin(
+                init_value=cfg.gamma, period=cfg.gamma_period, decay=cfg.gamma_decay, end_value=cfg.gamma_end, goal_value=1.
+            )
+            self.gamma: float = self.gamma_scheduler.get_variable()
+        else:
+            self.gamma: float = cfg.gamma
 
     def update_hyper_param(self) -> bool:
-        """
-        Periodically updates hyperparameters, e.g., discount factor via gamma_schedule.
+        """Updates the hyper-parameters of the critic, e.g., discount factor.
 
         Returns:
-            bool: True if gamma was updated, otherwise False.
+            bool: True if the discount factor (gamma) is updated.
         """
-        # HINT:
-        # 1. If self.eval => return False.
-        # 2. Possibly call super().update_hyper_param().
-        # 3. If gamma_schedule => step schedule => set self.gamma = self.gamma_scheduler.get_variable().
-        # 4. Return True if gamma changed, else False.
-        raise NotImplementedError("Adjust gamma or other hyperparams if schedules are used.")
+        if self.eval:
+            return False
+        else:
+        # Uses built scheduler object vs pytorch implmentation
+            super().update_hyper_param()
+            if self.gamma_schedule:
+                old_gamma = self.gamma_scheduler.get_variable()
+                self.gamma_scheduler.step()
+                self.gamma = self.gamma_scheduler.get_variable()
+                if self.gamma != old_gamma:
+                    return True
+            return False
 
 
     def update(
