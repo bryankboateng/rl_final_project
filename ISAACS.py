@@ -71,7 +71,7 @@ class ISAACS(BaseTraining):
         self.cnt_dstb_updates = 0  # Counts how many dstb updates since last ctrl update
 
         # Leaderboard: shape (K_ctrl + 1, K_dstb + 2, metrics)
-        self.leaderboard = None  # TODO: define using args.save_top_k.ctrl, .dstb, etc.
+        self.leaderboard = -np.inf * np.ones((self.cfg_solver.K_ctrl + 1, self.cfg_solver.K_dstb + 2, 3))
 
     def sample(self, obsrv_all: torch.Tensor) -> List[Dict[str, np.ndarray]]:
         """
@@ -85,6 +85,44 @@ class ISAACS(BaseTraining):
         Returns:
             List of action dictionaries with 'ctrl' and 'dstb' keys
         """
+        # Determine whether to use random policies (warmup) or learned policies.
+        # if self.cnt_step < self.cfg_solver.warmup_steps:
+        #     # Use random policies for both ctrl and dstb
+        #     action_all = [
+        #         {'ctrl': self.rnd_ctrl_policy(obsrv), 'dstb': self.rnd_dstb_policy(obsrv)}
+        #         for obsrv in obsrv_all
+        #     ]
+        # else:
+        #     # Use learned policies for ctrl and dstb
+        #     action_all = [
+        #         {'ctrl': self.ctrl(obsrv), 'dstb': self.dstb(obsrv)}
+        #         for obsrv in obsrv_all
+        #     ]
+
+        # Determine whether to use random policies (warmup) or learned policies.
+        if self.cnt_step < self.cfg_solver.warmup_steps:
+            # Warmup: use fixed random policies.
+            ctrl_actions = self.rnd_ctrl_policy(obsrv_all)
+            dstb_actions = self.rnd_dstb_policy(obsrv_all)
+        else:
+            # After warmup: use learned policies.
+            ctrl_actions = self.ctrl(obsrv_all)
+            dstb_actions = self.dstb(obsrv_all)
+            ctrl_actions = ctrl_actions.detach().cpu().numpy()
+            dstb_actions = dstb_actions.detach().cpu().numpy()
+
+        # Create a list of dictionaries, one per environment.
+        # Each dictionary has keys 'ctrl' and 'dstb'.
+        action_all = []
+        batch_size = obsrv_all.shape[0]
+        for idx in range(batch_size):
+            action_all.append({
+                'ctrl': ctrl_actions[idx],
+                'dstb': dstb_actions[idx]
+            })
+        return action_all
+
+        
         # TODO: Use ctrl and dstb policy objects to sample actions
         pass
 
