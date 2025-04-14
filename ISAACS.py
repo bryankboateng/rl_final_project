@@ -1,19 +1,17 @@
-
-    
-    
-    
 # --------------------------------------------------------
 # ISAACS : Iterative Soft Adversarial Actor-Critic for Safety
 # --------------------------------------------------------
 
 from typing import List, Dict, Union, Optional, Tuple
 import torch
+import copy
 import numpy as np
 
 from base_training import BaseTraining
 from utils import Batch
 from simulators import BaseEnv
 from simulators.vec_env.vec_env import VecEnvBase
+from simulators.policy import RandomPolicy
 
 class ISAACS(BaseTraining):
     """
@@ -36,11 +34,19 @@ class ISAACS(BaseTraining):
         """
         super().__init__(cfg_solver, cfg_arch, seed)
 
+        self.cfg_solver = cfg_solver
+        self.cfg_arch = cfg_arch
+        self.seed = seed
+
 
         # TODO: Set up control and disturbance agents from self.actors dict
         # self.ctrl = ...
+        self.ctrl = self.actors['ctrl']
         # self.dstb = ...
+        self.dstb = self.actors['dstb']
         # self.critic = ...
+        self.critic = self.actors['critic']
+
 
         # Checkpoint lists (step numbers)
         self.ctrl_ckpts = []
@@ -48,16 +54,20 @@ class ISAACS(BaseTraining):
 
         # Initialize fixed policies
         # self.rnd_ctrl_policy = ...
+        self.rnd_ctrl_policy = RandomPolicy(id='rnd_ctrl', action_range=self.ctrl.action_range, seed=self.seed)
         # self.rnd_dstb_policy = ...
+        self.rnd_dstb_policy = RandomPolicy(id='rnd_dstb', action_range=self.dstb.action_range, seed=self.seed)
         # self.dummy_dstb_policy = ...
-
+        self.dummy_dstb_policy = lambda obs: np.zeros(self.dstb.action_dim)
         # Evaluation policy copies (for checkpoint loading)
         # self.ctrl_eval = ...
+        self.ctrl_eval = copy.deepcopy(self.ctrl)
         # self.dstb_eval = ...
+        self.dstb_eval = copy.deepcopy(self.dstb)
 
         # Disturbance sampling distribution settings
-        self.softmax_rationality = ...
-        self.ctrl_update_ratio = ...
+        self.softmax_rationality = cfg_solver.softmax_rationality
+        self.ctrl_update_ratio = cfg_solver.ctrl_update_ratio
         self.cnt_dstb_updates = 0  # Counts how many dstb updates since last ctrl update
 
         # Leaderboard: shape (K_ctrl + 1, K_dstb + 2, metrics)
