@@ -665,7 +665,29 @@ class Actor(BaseBlock, BasePolicy):
         # 3. Backprop through self.optimizer.
         # 4. If self.learn_alpha and update_alpha, update log_alpha as well.
         # 5. Return the scalar losses for logging.
-        raise NotImplementedError("Actor update logic for Q + alpha * log_prob, etc.")
+
+        if self.actor_type == "min":
+           q_eval = torch.min(q1, q2)
+        else:
+           q_eval = torch.max(q1, q2)
+
+        loss_q_eval = (self.alpha.detach() * log_prob - q_eval).mean()
+
+        self.optimizer.zero_grad()
+        loss_q_eval.backward()
+        self.optimizer.step()
+        
+        loss_entropy = -(self.alpha * log_prob).mean()
+        
+        if self.learn_alpha and update_alpha:
+           loss_alpha = (self.alpha * (-log_prob - self.target_entropy).detach()).mean()
+           self.log_alpha_optimizer.zero_grad()
+           loss_alpha.backward()
+           self.log_alpha_optimizer.step()
+        else:
+           loss_alpha = 0.0
+        
+        return loss_q_eval.item(), loss_entropy.item(), loss_alpha.item()
 
 
     def update_policy(self, actor: "Actor"):
@@ -676,7 +698,9 @@ class Actor(BaseBlock, BasePolicy):
         # HINT:
         # 1. self.net.load_state_dict(actor.net.state_dict())
         # 2. Possibly handle other parameters like alpha, log_alpha, etc.
-        raise NotImplementedError("Implement a direct or partial copy of actor.net parameters.")
+        self.net.load_state_dict(actor.net.state_dict())
+        self.alpha = actor.alpha.clone()
+        self.log_alpha = actor.log_alpha.clone()
 
 
     def get_action(
@@ -707,7 +731,28 @@ class Actor(BaseBlock, BasePolicy):
         # 2. With torch.no_grad(), call self.net(...) for a deterministic forward pass.
         # 3. Convert any torch.Tensor output to numpy if needed.
         # 4. Return (action, dict(t_process=..., status=...)).
-        raise NotImplementedError("Implement deterministic action retrieval, including multi-agent synergy.")
+
+        # start_time = time.time() Do we need to track processing time for output?
+
+        if append is not None:
+           obsrv = np.concatenate([obsrv, append], axis=-1)
+        
+        if latent is not None:
+           obsrv = np.concatenate([obsrv, latent], axis=-1)
+
+        if self.obsrv_list is not None:
+           combined_obsrv = np.concatenate([obsrv, self.combine_actions(self.obsrv_list, agents_action)], axis=-1)
+        
+        else:
+           combined_obsrv = obsrv
+        
+        with torch.no_grad():
+           action = self.net(torch.FloatTensor(combined_obsrv))
+        
+        if isinstance(action, torch.Tensor):
+           action = action.cpu().numpy()
+        
+        return action, {"status": "success"}
 
 
     def sample(
@@ -736,10 +781,24 @@ class Actor(BaseBlock, BasePolicy):
         # 1. Possibly combine actions if self.obsrv_list is not None.
         # 2. If self.is_stochastic: call self.net.sample(...)
         # 3. Else, raise error or do something else if policy is not stochastic.
-        raise NotImplementedError("Implement the sampling logic for a stochastic policy.")
+        if append is not None:
+           obsrv = np.concatenate([obsrv, append], axis=-1)
+        
+        if latent is not None:
+           obsrv = np.concatenate([obsrv, latent], axis=-1)
 
-
-
+        if self.obsrv_list is not None:
+           combined_obsrv = np.concatenate([obsrv, self.combine_actions(self.obsrv_list, agents_action)], axis=-1)
+        
+        else:
+           combined_obsrv = obsrv
+        
+        if self.is_stochastic:
+           sampled_action, log_prob = self.net.sample(torch.FloatTensor(combined_obsrv))
+        else:
+            raise ValueError("Policy is not stochastic---cannot sample from it")
+        
+        return sampled_action, log_prob
 
 
 class Critic(BaseBlock):
@@ -771,7 +830,12 @@ class Critic(BaseBlock):
         # 1. Possibly store mode, update_target_period if not self.eval, etc.
         # 2. Call self.build_network(cfg, cfg_arch, verbose).
         #    That will create self.net and self.target.
-        raise NotImplementedError("Fill in Critic.__init__ logic.")
+        
+        if not self.eval:
+            self.mode: str = cfg.mode
+            self.update_target_period = int(cfg.update_target_period)
+
+        self.build_network(cfg, cfg_arch, verbose=verbose)
 
 
     def build_network(self, cfg, cfg_arch, verbose: bool = True):
@@ -789,11 +853,7 @@ class Critic(BaseBlock):
         # 2. If pretrained_path is given, load model state (but maybe skip some parts).
         # 3. If eval mode: self.net.eval(), freeze params, set self.target = self.net.
         #    else: create a deepcopy => self.target = copy.deepcopy(self.net) => build_optimizer(cfg).
-        if not self.eval:
-            self.mode: str = cfg.mode
-            self.update_target_period = int(cfg.update_target_period)
-
-        self.build_network(cfg, cfg_arch, verbose=verbose)
+        raise NotImplementedError("Fill in build_network")
 
     def build_network(self, cfg, cfg_arch, verbose: bool = True):
 
