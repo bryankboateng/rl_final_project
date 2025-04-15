@@ -33,13 +33,11 @@ class ISAACS(BaseTraining):
             seed: Random seed
         """
         super().__init__(cfg_solver, cfg_arch, seed)
-
+        # TODO: Set up control and disturbance agents from self.actors dict
         self.cfg_solver = cfg_solver
         self.cfg_arch = cfg_arch
         self.seed = seed
-
-
-        # TODO: Set up control and disturbance agents from self.actors dict
+        
         # self.ctrl = ...
         self.ctrl = self.actors['ctrl']
         # self.dstb = ...
@@ -64,6 +62,7 @@ class ISAACS(BaseTraining):
         self.ctrl_eval = copy.deepcopy(self.ctrl)
         # self.dstb_eval = ...
         self.dstb_eval = copy.deepcopy(self.dstb)
+    
 
         # Disturbance sampling distribution settings
         self.softmax_rationality = cfg_solver.softmax_rationality
@@ -122,10 +121,6 @@ class ISAACS(BaseTraining):
             })
         return action_all
 
-        
-        # TODO: Use ctrl and dstb policy objects to sample actions
-        pass
-
     def interact(
         self,
         rollout_env: Union[BaseEnv, VecEnvBase],
@@ -142,7 +137,42 @@ class ISAACS(BaseTraining):
             obsrv_nxt_all: Tensor of next observations
         """
         # TODO: Step environment, store to replay buffer, update counters
-        pass
+        # pass
+        obsrv_nxt_all, rewards, dones, infos = rollout_env.step(action_all)
+        rewards_tensor = torch.tensor(rewards, dtype=torch.float32)
+        dones_tensor = torch.tensor(dones, dtype=torch.bool)
+        # safety_violations = np.array([info.get('safety_violation', 0.0) for info in infos])
+
+        # Create a Batch instance with the transition.
+        transition = Batch(
+            obs=obsrv_all,
+            actions=action_all,
+            rewards=rewards_tensor,
+            next_obs=obsrv_nxt_all,
+            dones=dones_tensor,
+            infos=infos,
+        )
+
+        # Store transition in replay buffer
+        self.memory.update(transition)
+        # Update global step counter.
+        self.cnt_step += 1
+
+        # If any environments are done, reset them.
+        if any(dones):
+            # Identify which indices (environments) are done.
+            done_indices = [i for i, done in enumerate(dones) if done]
+            # Reset the done environments.
+            obsrv_reset = rollout_env.reset(indices=done_indices)
+            # Replace the corresponding entries in the next observations with the reset observations.
+            # This ensures that the replay buffer and the next state used by the agent reflect the reset state.
+            for idx, reset_obs in zip(done_indices, obsrv_reset):
+                obsrv_nxt_all[idx] = reset_obs
+
+            self.dstb.reset(done_indices)
+            # self.dstb_sampler_list[done_indices] = self.get_dstb_sampler()
+
+        return obsrv_nxt_all
 
     def update(self):
         """
@@ -161,7 +191,61 @@ class ISAACS(BaseTraining):
         """
         # TODO: Sample batch and call update_one()
         # Check `cnt_opt_period`, reset as needed
-        pass
+        # pass
+        # Check if conditions are met for starting updates.
+        if self.cnt_step < self.cfg_solver.min_steps_b4_opt or self.cnt_opt_period < self.cfg_solver.opt_period:
+            return
+        
+        # Optionally accumulate loss metrics for logging.
+        accumulated_losses = {
+            "q_loss": 0.0,
+            "ctrl_loss": 0.0,
+            "ent_ctrl_loss": 0.0,
+            "alpha_ctrl_loss": 0.0,
+            "dstb_loss": 0.0,
+            "ent_dstb_loss": 0.0,
+            "alpha_dstb_loss": 0.0
+        }
+        ctrl_updates = 0
+
+        # Number of update iterations to perform in this cycle.
+        num_updates = self.cfg_solver.num_updates_per_opt
+
+        for update_idx in range(num_updates):
+            # Determine whether to update ctrl on this step.
+            update_ctrl = (update_idx % self.cfg_solver.ctrl_update_ratio == 0)
+            # Always update disturbance agent.
+            update_dstb = True  
+
+            # Sample a batch from the replay buffer.
+            batch = self.memory.sample(self.cfg_solver.batch_size)
+
+            # Perform a single update step and obtain loss values.
+            # The update_one method should return a tuple with losses:
+            # (q_loss, ctrl_loss, ent_ctrl_loss, alpha_ctrl_loss, dstb_loss, ent_dstb_loss, alpha_dstb_loss)
+            losses = self.update_one(batch, update_idx, update_ctrl, update_dstb)
+
+            # Accumulate losses for logging.
+            if update_ctrl:
+                accumulated_losses["ctrl_loss"] += losses[1]
+                accumulated_losses["ent_ctrl_loss"] += losses[2]
+                accumulated_losses["alpha_ctrl_loss"] += losses[3]
+                ctrl_updates += 1
+            accumulated_losses["q_loss"] += losses[0]
+            accumulated_losses["dstb_loss"] += losses[4]
+            accumulated_losses["ent_dstb_loss"] += losses[5]
+            accumulated_losses["alpha_dstb_loss"] += losses[6]
+
+            # Compute average losses for logging.
+            avg_ctrl_loss = accumulated_losses["ctrl_loss"] / ctrl_updates if ctrl_updates > 0 else 0
+            avg_q_loss = accumulated_losses["q_loss"] / num_updates
+            avg_dstb_loss = accumulated_losses["dstb_loss"] / num_updates
+
+        # Where should we log the avg losses?
+
+        # After an update cycle, reset the optimization period counter.
+        self.cnt_opt_period = 0
+
 
     def update_one(self, batch: Batch, timer: int, update_ctrl: bool, update_dstb: bool) -> Tuple[float, ...]:
         """
