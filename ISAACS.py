@@ -424,7 +424,7 @@ class ISAACS(BaseTraining):
                 key = f"ctrl_idx_{ctrl_idx}_vs_dstb_idx_{dstb_idx}"
                 eval_scores[key] = matchup_score
 
-        # ADD TO LEADERBOARD!!!!
+        ADD TO LEADERBOARD!!!!
 
         # Reset evaluation period counter.
         self.cnt_eval_period = 0
