@@ -42,33 +42,41 @@ def get_bellman_update(
     # 4) Based on mode logic, fill y for non_final_mask and final_mask.
     # 5) Return y.
 
-    # raise NotImplementedError("Fill in get_bellman_update logic (min vs max, terminal handling, etc.).")
-
+    # Initialize target values
     y = torch.zeros(batch_size)
 
     if (mode == 'risk'):
-        pass
+        next_qs = torch.min(q1_nxt, q2_nxt)
+        # use Bellman equation for non-terminal states
+        y[non_final_mask] = reward[non_final_mask] + gamma * next_qs[non_final_mask]
+        # Use binary cost for terminal states
+        y[~non_final_mask] = binary_cost[~non_final_mask]
 
     elif (mode == 'reach-avoid'):
-        # Q(s,a) = min{g_x, max{l_x, Q(s',a')}}
         next_qs = torch.min(q1_nxt, q2_nxt)
-        next_qs = torch.min(g_x, torch.max(l_x, next_qs)) # add entropy?
-        ra_vals = (1 - gamma) * reward + gamma * next_qs
-        y = ra_vals * non_final_mask # This is definitely wrong
+        next_qs = torch.min(g_x, torch.max(l_x, next_qs))
+        # use Bellman equation for non-terminal states
+        y[non_final_mask] = reward[non_final_mask] + gamma * next_qs[non_final_mask]
+        # Use g_x for terminal states
+        y[~non_final_mask] = g_x[~non_final_mask]
 
     elif (mode == 'safety'):
         next_qs = torch.min(q1_nxt, q2_nxt)
         next_qs = torch.min(g_x, next_qs)
-        vals = (1 - gamma) * reward + gamma * next_qs
-        y = vals * non_final_mask # This is definitely wrong
+        # use Bellman equation for non-terminal states
+        y[non_final_mask] = reward[non_final_mask] + gamma * next_qs[non_final_mask]
+        # Use g_x for terminal states
+        y[~non_final_mask] = g_x[~non_final_mask]
 
     elif (mode == 'performance'):
         next_qs = torch.max(q1_nxt, q2_nxt)
-        vals = (1 - gamma) * reward + gamma * next_qs
-        y = vals * non_final_mask # This is definitely wrong
+        # Non-terminal states
+        y[non_final_mask] = reward[non_final_mask] + gamma * next_qs[non_final_mask]
+        # Terminal states
+        y[~non_final_mask] = reward[~non_final_mask]
 
     else:
-        print("Error")
+        raise ValueError("Mode not supported")
     
     return y
 

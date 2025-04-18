@@ -30,6 +30,7 @@ from torch.optim import Adam, AdamW
 from simulators.policy.base_policy import BasePolicy
 from utils import save_model, StepLRMargin
 from torch.optim.lr_scheduler import StepLR
+from utils_implemented import *
 
 activation_dict = nn.ModuleDict({
     "ReLU": nn.ReLU(),
@@ -129,7 +130,6 @@ def get_mlp_input(
         obsrv = torch.FloatTensor(obsrv).to(device)
         np_input = True
         
-        
     if len(obsrv.shape) == 1:
         obsrv = obsrv.unsqueeze(0)
         num_extra_dim = 1
@@ -138,9 +138,6 @@ def get_mlp_input(
         if isinstance(action, np.ndarray):
             action = torch.FloatTensor(action).to(device)
         obsrv = torch.concat((obsrv, action), dim=-1)
-    
-    
-        
     
     return obsrv, np_input, num_extra_dim
 
@@ -285,14 +282,11 @@ class GaussianPolicy(nn.Module):
         self.LOG_STD_MAX = 2
         self.LOG_STD_MIN = -20
         self.eps = 1e-6
-        
-        
 
 
     def forward(
         self,
         obsrv: Union[np.ndarray, torch.Tensor],
-
     ) -> Union[np.ndarray, torch.Tensor]:
         """
         Computes a deterministic action via the 'mean' network.
@@ -331,7 +325,6 @@ class GaussianPolicy(nn.Module):
         if np_input:
             scaled_action = scaled_action.detach().cpu().numpy()
         return scaled_action
-
 
 
     def sample(
@@ -384,8 +377,6 @@ class GaussianPolicy(nn.Module):
         return action, log_prob
         
 
-
-
     def to(self, device: Union[str, torch.device]):
         """
         Moves module + any buffers/tensors (like action range) to a new device.
@@ -408,9 +399,6 @@ class GaussianPolicy(nn.Module):
         Indicates whether this policy outputs stochastic actions.
         """
         return True
-
-
-
 
 
 
@@ -666,26 +654,30 @@ class Actor(BaseBlock, BasePolicy):
         # 4. If self.learn_alpha and update_alpha, update log_alpha as well.
         # 5. Return the scalar losses for logging.
 
+        # Combine Q-values depending on actor type
         if self.actor_type == "min":
            q_eval = torch.min(q1, q2)
         else:
            q_eval = torch.max(q1, q2)
 
+        # Compute policy loss
         loss_q_eval = (self.alpha.detach() * log_prob - q_eval).mean()
 
         self.optimizer.zero_grad()
         loss_q_eval.backward()
         self.optimizer.step()
         
+        # Compute entropy loss
         loss_entropy = -(self.alpha * log_prob).mean()
         
+        # Update alpha if needed
         if self.learn_alpha and update_alpha:
            loss_alpha = (self.alpha * (-log_prob - self.target_entropy).detach()).mean()
            self.log_alpha_optimizer.zero_grad()
            loss_alpha.backward()
            self.log_alpha_optimizer.step()
         else:
-           loss_alpha = 0.0
+           loss_alpha = torch.tensor(0.0, device=self.device)
         
         return loss_q_eval.item(), loss_entropy.item(), loss_alpha.item()
 
@@ -734,18 +726,20 @@ class Actor(BaseBlock, BasePolicy):
 
         # start_time = time.time() Do we need to track processing time for output?
 
+        # Handle additional inputs
         if append is not None:
            obsrv = np.concatenate([obsrv, append], axis=-1)
         
         if latent is not None:
            obsrv = np.concatenate([obsrv, latent], axis=-1)
-
+        
+        # Handle other agents' actions
         if self.obsrv_list is not None:
            combined_obsrv = np.concatenate([obsrv, self.combine_actions(self.obsrv_list, agents_action)], axis=-1)
-        
         else:
            combined_obsrv = obsrv
         
+        # Get deterministic action
         with torch.no_grad():
            action = self.net(torch.FloatTensor(combined_obsrv))
         
@@ -781,22 +775,26 @@ class Actor(BaseBlock, BasePolicy):
         # 1. Possibly combine actions if self.obsrv_list is not None.
         # 2. If self.is_stochastic: call self.net.sample(...)
         # 3. Else, raise error or do something else if policy is not stochastic.
+
+        # Handle additional inputs
         if append is not None:
            obsrv = np.concatenate([obsrv, append], axis=-1)
         
         if latent is not None:
            obsrv = np.concatenate([obsrv, latent], axis=-1)
 
+        # Handle other agents' actions
         if self.obsrv_list is not None:
            combined_obsrv = np.concatenate([obsrv, self.combine_actions(self.obsrv_list, agents_action)], axis=-1)
         
         else:
            combined_obsrv = obsrv
-        
+
+        # Sample action and log_prob
         if self.is_stochastic:
            sampled_action, log_prob = self.net.sample(torch.FloatTensor(combined_obsrv))
         else:
-            raise ValueError("Policy is not stochastic---cannot sample from it")
+            raise ValueError("Policy not stochastic")
         
         return sampled_action, log_prob
 
@@ -853,9 +851,6 @@ class Critic(BaseBlock):
         # 2. If pretrained_path is given, load model state (but maybe skip some parts).
         # 3. If eval mode: self.net.eval(), freeze params, set self.target = self.net.
         #    else: create a deepcopy => self.target = copy.deepcopy(self.net) => build_optimizer(cfg).
-        raise NotImplementedError("Fill in build_network")
-
-    def build_network(self, cfg, cfg_arch, verbose: bool = True):
 
         self.net = TwinnedQNetwork(
             obsrv_dim=cfg_arch.obsrv_dim, mlp_dim=cfg_arch.mlp_dim, action_dim=cfg_arch.action_dim,
@@ -948,8 +943,33 @@ class Critic(BaseBlock):
         # 3. Compute MSE loss => (loss_q1 + loss_q2).
         # 4. Zero grad => backprop => optimizer.step().
         # 5. Return loss_q.item().
-        raise NotImplementedError("Implement Bellman backup (y) and MSE for Q1/Q2 here.")
+        
+        # Compute target Q-values using Bellman update
+        target_q = get_bellman_update(
+           mode=self.mode,
+           batch_size=self.batch_size,
+           q1_nxt=q1_nxt,
+           q2_nxt=q2_nxt,
+           non_final_mask=non_final_mask,
+           reward=reward,
+           g_x=g_x,
+           l_x=l_x,
+           binary_cost=binary_cost,
+           gamma=self.gamma)
 
+        if self.mode == 'performance':
+            target_q += self.gamma * entropy_motives
+
+        # Compute MSE loss
+        loss_q1 = F.mse_loss(q1, target_q)
+        loss_q2 = F.mse_loss(q2, target_q)
+        loss_q = loss_q1 + loss_q2
+
+        self.optimizer.zero_grad()
+        loss_q.backward()
+        self.optimizer.step()
+
+        return loss_q.item()
 
     def update_target(self):
         """
@@ -958,7 +978,7 @@ class Critic(BaseBlock):
         """
         # HINT:
         # e.g. soft_update(self.target, self.net, self.tau)
-        raise NotImplementedError("Implement polyak averaging from self.net to self.target.")
+        soft_update(self.target, self.net, self.tau)
 
 
     def restore(self, step: int, model_folder: str, verbose: bool = True):
@@ -978,7 +998,15 @@ class Critic(BaseBlock):
         # 1. Possibly call super().restore(step, model_folder, verbose).
         # 2. Load self.target if not eval mode.
         # 3. Return the path.
-        raise NotImplementedError("Implement model loading, including target network if not eval.")
+
+        path = super().restore(step, model_folder, verbose)
+        
+        if not self.eval and path is not None:
+            self.target.load_state_dict(self.net.state_dict())
+            if verbose:
+                print(f"  => Restored target network from {path}")
+        
+        return path
 
     ####################################################
     # VALUE SIGNATURE
@@ -1007,8 +1035,15 @@ class Critic(BaseBlock):
         # 2. average = (q1 + q2) / 2
         # 3. convert to numpy if it's a torch.Tensor
         # 4. return average
-        raise NotImplementedError("Compute average Q-value from twinned networks in a no_grad context.")
 
+        with torch.no_grad():
+            q1, q2 = self.net(obsrv, action, append=append, latent=latent)
+            average = (q1 + q2) / 2
+
+        if isinstance(average, torch.Tensor):
+            average = average.cpu().numpy()
+       
+        return average
 
 ### Key method that allows porting actor and critic into training scripts ###
 def build_network(cfg, cfg_arch, device: torch.device,
