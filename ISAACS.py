@@ -269,11 +269,6 @@ class ISAACS(BaseTraining):
         # Unpack the batch.
         obs = batch.obs  # shape: (B, obs_dim)
 
-        # Extract control and disturbance actions.
-        ctrl_actions = torch.stack([torch.tensor(a['ctrl'], dtype=torch.float32) for a in batch.actions])
-        dstb_actions = torch.stack([torch.tensor(a['dstb'], dtype=torch.float32) for a in batch.actions])
-        # Concatenate along the last dimension for the critic.
-        current_actions = torch.cat([ctrl_actions, dstb_actions], dim=-1)
         # Extract rewards, next observations, and done flags.
         rewards = batch.rewards  # shape: (B,)
         next_obs = batch.next_obs  # shape: (B, obs_dim)
@@ -281,14 +276,32 @@ class ISAACS(BaseTraining):
 
         gamma = self.cfg_solver.gamma  # discount factor
 
-        # ----- Critic Update -----
         # Sample next actions and corresponding log probabilities from both policies.
+        current_ctrl_actions, current_ctrl_log_prob = self.ctrl.sample(obs)
+        current_dstb_actions, current_dstb_log_prob = self.dstb.sample(obs)
         next_ctrl_actions, next_ctrl_log_prob = self.ctrl.sample(next_obs)
-        next_dstb_actions, _ = self.dstb.sample(next_obs)
+        next_dstb_actions, next_dstb_log_prob = self.dstb.sample(next_obs)
+
+        # Concatenate current actions.
+        current_actions = torch.cat([current_ctrl_actions, current_dstb_actions], dim=-1)
+        
+        # Concatenate next actions.
         next_actions = torch.cat([next_ctrl_actions, next_dstb_actions], dim=-1)
 
-        # Compute target Q-values using target networks
+        # Delete this? I think we have to sample instead of extract
+        # # Extract control and disturbance actions.
+        # ctrl_actions = torch.stack([torch.tensor(a['ctrl'], dtype=torch.float32) for a in batch.actions])
+        # dstb_actions = torch.stack([torch.tensor(a['dstb'], dtype=torch.float32) for a in batch.actions])
+        # # Concatenate along the last dimension for the critic.
+        # current_actions = torch.cat([ctrl_actions, dstb_actions], dim=-1)
+        
+        # Get Q-values for current states.
+        q1_current, q2_current = self.critic(obs, current_actions)
+
+        # Compute target Q-values using target networks.
         q1_next, q2_next = self.critic.target(next_obs, next_actions)
+
+        # Compute target Q-values.
         min_q_next = torch.min(q1_next, q2_next)
 
         # Use control's entropy bonus in the target.
@@ -296,42 +309,76 @@ class ISAACS(BaseTraining):
         target_q = rewards + gamma * (1 - dones) * (min_q_next - alpha_ctrl * next_ctrl_log_prob)
         target_q = target_q.detach()
 
-        # Compute current Q estimates.
-        q1, q2 = self.critic(obs, current_actions)
-        critic_loss = torch.nn.functional.mse_loss(q1, target_q) + torch.nn.functional.mse_loss(q2, target_q)
+        # THIS PART SHOULD BE HANDLED IN ACTORS_AND_CRITICS.PY
+        # # Compute current Q estimates.
+        # q1, q2 = self.critic(obs, current_actions)
+        # critic_loss = torch.nn.functional.mse_loss(q1, target_q) + torch.nn.functional.mse_loss(q2, target_q)
 
-        self.critic.optimizer.zero_grad()
-        critic_loss.backward()
-        self.critic.optimizer.step()
+        # self.critic.optimizer.zero_grad()
+        # critic_loss.backward()
+        # self.critic.optimizer.step()
+
+        # Update critic
+        critic_loss = self.critic.update(
+            q1=q1_current,
+            q2=q2_current,
+            q1_nxt=q1_next,
+            q2_nxt=q2_next,
+            non_final_mask = ~dones.bool(),
+            reward=rewards,
+            g_x=torch.zeros_like(rewards), # Placeholder???
+            l_x=torch.zeros_like(rewards),
+            binary_cost=torch.zeros_like(rewards),
+            entropy_motives=None # What is this???
+        )
+
+        # Initialize loss variables
+        ctrl_loss = torch.tensor(0.0, device=obs.device)
+        ent_ctrl_loss = torch.tensor(0.0, device=obs.device)
+        alpha_ctrl_loss = torch.tensor(0.0, device=obs.device)
+        dstb_loss = torch.tensor(0.0, device=obs.device)
+        ent_dstb_loss = torch.tensor(0.0, device=obs.device)
+        alpha_dstb_loss = torch.tensor(0.0, device=obs.device)
 
         # ----- Control Policy Update -----
         if update_ctrl:
-            # Sample new control actions for current observations along with log probabilities.
-            new_ctrl_actions, new_ctrl_log_prob = self.ctrl.sample(obs)
-            # For the disturbance, either use the current policy or a fixed sample.
-            new_dstb_actions, _ = self.dstb.sample(obs)
-            new_actions = torch.cat([new_ctrl_actions, new_dstb_actions], dim=-1)
 
-            # Compute Q-values for the current control actions.
-            q1_ctrl, q2_ctrl = self.critic(obs, new_actions)
-            min_q_ctrl = torch.min(q1_ctrl, q2_ctrl)
+            # I'm pretty sure this should all be handled in actors_and_critics.py
 
-            # SAC actor loss for ctrl: aiming to maximize Q + entropy.
-            ctrl_loss = (self.ctrl.alpha * new_ctrl_log_prob - min_q_ctrl).mean()
+            # # Sample new control actions for current observations along with log probabilities.
+            # new_ctrl_actions, new_ctrl_log_prob = self.ctrl.sample(obs)
+            # # For the disturbance, either use the current policy or a fixed sample.
+            # new_dstb_actions, _ = self.dstb.sample(obs)
+            # new_actions = torch.cat([new_ctrl_actions, new_dstb_actions], dim=-1)
 
-            # Update control policy.
-            self.ctrl.optimizer.zero_grad()
-            ctrl_loss.backward()
-            self.ctrl.optimizer.step()
+            # # Compute Q-values for the current control actions.
+            # q1_ctrl, q2_ctrl = self.critic(obs, new_actions)
+            # min_q_ctrl = torch.min(q1_ctrl, q2_ctrl)
 
-            # Automatic entropy tuning for ctrl.
-            target_entropy_ctrl = self.cfg_solver.target_entropy
-            log_alpha_ctrl = self.ctrl.log_alpha  # assume this is a learnable parameter
-            alpha_ctrl_loss = (-log_alpha_ctrl * (new_ctrl_log_prob + target_entropy_ctrl).detach()).mean()
+            # # SAC actor loss for ctrl: aiming to maximize Q + entropy.
+            # ctrl_loss = (self.ctrl.alpha * new_ctrl_log_prob - min_q_ctrl).mean()
 
-            self.ctrl.alpha_optimizer.zero_grad()
-            alpha_ctrl_loss.backward()
-            self.ctrl.alpha_optimizer.step()
+            # # Update control policy.
+            # self.ctrl.optimizer.zero_grad()
+            # ctrl_loss.backward()
+            # self.ctrl.optimizer.step()
+
+            # # Automatic entropy tuning for ctrl.
+            # target_entropy_ctrl = self.cfg_solver.target_entropy
+            # log_alpha_ctrl = self.ctrl.log_alpha  # assume this is a learnable parameter
+            # alpha_ctrl_loss = (-log_alpha_ctrl * (new_ctrl_log_prob + target_entropy_ctrl).detach()).mean()
+
+            # self.ctrl.alpha_optimizer.zero_grad()
+            # alpha_ctrl_loss.backward()
+            # self.ctrl.alpha_optimizer.step()
+            
+            ctrl_loss, ent_ctrl_loss, alpha_ctrl_loss = self.ctrl.update(
+            q1=q1_current,
+            q2=q2_current,
+            log_prob=current_ctrl_log_prob,
+            update_alpha=True
+            )
+        
         else:
             ctrl_loss = torch.tensor(0.0, device=obs.device)
             new_ctrl_log_prob = torch.tensor(0.0, device=obs.device)
@@ -339,49 +386,60 @@ class ISAACS(BaseTraining):
 
         # ----- Disturbance Policy Update -----
         if update_dstb:
-            # Sample new disturbance actions for current observations.
-            new_dstb_actions, new_dstb_log_prob = self.dstb.sample(obs)
-            # For stability, use a fixed control action (sampled with no gradient flow).
-            with torch.no_grad():
-                fixed_ctrl_actions, _ = self.ctrl.sample(obs)
-            new_actions_dstb = torch.cat([fixed_ctrl_actions, new_dstb_actions], dim=-1)
 
-            # Compute Q-values for the current disturbance actions.
-            q1_dstb, q2_dstb = self.critic(obs, new_actions_dstb)
-            min_q_dstb = torch.min(q1_dstb, q2_dstb)
+            # I'm pretty sure this should all be handled in actors_and_critics.py
 
-            # For an adversarial disturbance agent, we reverse the sign of the typical SAC objective.
-            # The disturbance policy seeks to increase the critic's Q-value (i.e. worsen safety).
-            dstb_loss = (-min_q_dstb - self.dstb.alpha * new_dstb_log_prob).mean()
+            # # Sample new disturbance actions for current observations.
+            # new_dstb_actions, new_dstb_log_prob = self.dstb.sample(obs)
+            # # For stability, use a fixed control action (sampled with no gradient flow).
+            # with torch.no_grad():
+            #     fixed_ctrl_actions, _ = self.ctrl.sample(obs)
+            # new_actions_dstb = torch.cat([fixed_ctrl_actions, new_dstb_actions], dim=-1)
 
-            # Update disturbance policy.
-            self.dstb.optimizer.zero_grad()
-            dstb_loss.backward()
-            self.dstb.optimizer.step()
+            # # Compute Q-values for the current disturbance actions.
+            # q1_dstb, q2_dstb = self.critic(obs, new_actions_dstb)
+            # min_q_dstb = torch.min(q1_dstb, q2_dstb)
 
-            # Automatic entropy tuning for disturbance.
-            target_entropy_dstb = self.cfg_solver.target_entropy_dstb  # defined in config
-            log_alpha_dstb = self.dstb.log_alpha  # learnable parameter
-            alpha_dstb_loss = (log_alpha_dstb * (new_dstb_log_prob - target_entropy_dstb).detach()).mean()
-            self.dstb.alpha_optimizer.zero_grad()
-            alpha_dstb_loss.backward()
-            self.dstb.alpha_optimizer.step()
+            # # For an adversarial disturbance agent, we reverse the sign of the typical SAC objective.
+            # # The disturbance policy seeks to increase the critic's Q-value (i.e. worsen safety).
+            # dstb_loss = (-min_q_dstb - self.dstb.alpha * new_dstb_log_prob).mean()
+
+            # # Update disturbance policy.
+            # self.dstb.optimizer.zero_grad()
+            # dstb_loss.backward()
+            # self.dstb.optimizer.step()
+
+            # # Automatic entropy tuning for disturbance.
+            # target_entropy_dstb = self.cfg_solver.target_entropy_dstb  # defined in config
+            # log_alpha_dstb = self.dstb.log_alpha  # learnable parameter
+            # alpha_dstb_loss = (log_alpha_dstb * (new_dstb_log_prob - target_entropy_dstb).detach()).mean()
+            # self.dstb.alpha_optimizer.zero_grad()
+            # alpha_dstb_loss.backward()
+            # self.dstb.alpha_optimizer.step()
+            
+            dstb_loss, ent_dstb_loss, alpha_dstb_loss = self.dstb.update(
+            q1=-q1_current, # Negate Q-values for adversarial objective
+            q2=-q2_current,
+            log_prob=current_dstb_log_prob,
+            update_alpha=True
+            )
+
         else:
             dstb_loss = torch.tensor(0.0, device=obs.device)
             new_dstb_log_prob = torch.tensor(0.0, device=obs.device)
             alpha_dstb_loss = torch.tensor(0.0, device=obs.device)
 
-        # ----------------- Soft Update of Target Networks ----------------- #
+        # Soft Update of Target Networks
         self.critic.update_target()
 
         # Return a tuple of loss values as floats.
         return (
             critic_loss.item(),        # q_loss
             ctrl_loss.item(),          # ctrl_loss
-            new_ctrl_log_prob.item(),  # ent_ctrl (proxy via log_prob)
+            ent_ctrl_loss.item(),      # ent_ctrl (proxy via log_prob)
             alpha_ctrl_loss.item(),    # alpha_ctrl_loss
             dstb_loss.item(),          # dstb_loss
-            new_dstb_log_prob.item(),  # ent_dstb (proxy via log_prob)
+            ent_dstb_loss.item(),      # ent_dstb (proxy via log_prob)
             alpha_dstb_loss.item()     # alpha_dstb_loss
         )
 
