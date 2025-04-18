@@ -100,7 +100,5 @@ def soft_update(
     # 1) Loop over pairs of parameters: (target_param, param) in zip(target.parameters(), source.parameters()).
     # 2) Update each: target_param.data = (1 - tau)*target_param.data + tau*param.data
 
-    # raise NotImplementedError("Implement in-place soft update (Polyak averaging).")
-
     for target_param, param in zip(target.parameters(), source.parameters()):
         target_param.data = (1 - tau)*target_param.data + tau*param.data

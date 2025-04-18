@@ -281,11 +281,13 @@ class ISAACS(BaseTraining):
         ctrl_action      = batch.action['ctrl']
         dstb_action      = batch.action['dstb']
 
-        # Critic Update
+        # Set training/eval modes for networks.
         self.critic.net.train()
         self.critic.target.train()
         self.ctrl.net.eval()
         self.dstb.net.eval()
+
+        # ---- CRITIC UPDATE ---- #
 
         # Gather actions from both agents.
         with torch.no_grad():
@@ -293,6 +295,8 @@ class ISAACS(BaseTraining):
             dstb_action_nxt, _ = self.dstb.sample(
                 obs_nxt, agents_action={'ctrl': ctrl_action_nxt.cpu().numpy()}
             )
+        
+        # Concatenate actions.
         action      = torch.cat([ctrl_action, dstb_action], dim=-1)
         action_nxt  = torch.cat([ctrl_action_nxt, dstb_action_nxt], dim=-1)
 
@@ -318,7 +322,8 @@ class ISAACS(BaseTraining):
         # Set Critic into eval mode.
         self.critic.net.eval()
 
-        # ctrl Actor Update.
+        # ---- CONTROL POLICY UPDATE ---- #
+
         if update_ctrl and timer % self.ctrl_update_ratio == 0:
 
             # Configure ctrl for training.
@@ -342,7 +347,8 @@ class ISAACS(BaseTraining):
         else:
             loss_ctrl = ent_ctrl = alpha_ctrl = 0.0
 
-        # dstb Actor Update.
+        # ---- DISTURBANCE POLICY UPDATE ---- #
+
         if update_dstb:
 
             # Configure dstb for training.
@@ -365,7 +371,8 @@ class ISAACS(BaseTraining):
         else:
             loss_dstb = ent_dstb = alpha_dstb = 0.0
 
-        # Update critic target.
+        # ---- CRITIC TARGET UPDATE ---- #
+
         if timer % self.critic.update_target_period == 0:
             self.critic.update_target()
         
@@ -394,7 +401,7 @@ class ISAACS(BaseTraining):
         - Logs all losses
         """
         # TODO: Loop through update_one(), track running losses
-        # pass
+
         # Check if we need to update the control policy and create logs.
         if self.cnt_dstb_updates == self.ctrl_update_ratio:
             update_ctrl = True
@@ -410,7 +417,7 @@ class ISAACS(BaseTraining):
         loss_ent_dstb_list      = []
         loss_alpha_dstb_list    = []
 
-        # reset timer
+        # Reset timer.
         self.cnt_opt_period = 0
 
         for timer in range(self.num_updates_per_opt):
@@ -432,14 +439,16 @@ class ISAACS(BaseTraining):
                 update_ctrl=update_ctrl,
                 update_dstb=True)
             
-            # Append losses to lists.
+            # Track critic loss.
             loss_q_list.append(loss_q)
 
+            # Track control losses (only when updating control).
             if update_ctrl and timer % self.ctrl.update_period == 0:
                 loss_ctrl_list.append(loss_ctrl)
                 loss_ent_ctrl_list.append(ent_ctrl)
                 loss_alpha_ctrl_list.append(alpha_ctrl)
 
+            # Track disturbance losses.
             if timer % self.dstb.update_period == 0:
                 loss_dstb_list.append(loss_dstb)
                 loss_ent_dstb_list.append(ent_dstb)
