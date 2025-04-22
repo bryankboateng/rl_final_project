@@ -1,0 +1,202 @@
+== Environment information ==
+/Users/bboat/anaconda3/envs/gameplay/lib/python3.8/site-packages/gym/spaces/box.py:127: UserWarning: [33mWARN: Box bound precision lowered by casting to float32
+  logger.warn(f"Box bound precision lowered by casting to {self.dtype}")
+Spirit Pybullet initialized
+== Solver information ==
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=54, out_features=128, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=128, out_features=128, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=128, out_features=1, bias=True)
+    (act_1): Identity()
+  )
+)
+Q1: MLP(
+  (moduleList): ModuleList(
+    (0): Sequential(
+      (linear_1): Linear(in_features=54, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (1-2): 2 x Sequential(
+      (linear_1): Linear(in_features=128, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (3): Sequential(
+      (linear_1): Linear(in_features=128, out_features=1, bias=True)
+      (act_1): Identity()
+    )
+  )
+)
+Q2: MLP(
+  (moduleList): ModuleList(
+    (0): Sequential(
+      (linear_1): Linear(in_features=54, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (1-2): 2 x Sequential(
+      (linear_1): Linear(in_features=128, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (3): Sequential(
+      (linear_1): Linear(in_features=128, out_features=1, bias=True)
+      (act_1): Identity()
+    )
+  )
+)
+/Users/bboat/anaconda3/envs/gameplay/lib/python3.8/site-packages/gym/spaces/box.py:127: UserWarning: [33mWARN: Box bound precision lowered by casting to float32
+  logger.warn(f"Box bound precision lowered by casting to {self.dtype}")
+sim trajs:   0%|          | 0/20 [00:00<?, ?it/s]
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=36, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=12, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=36, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=12, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=36, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=6, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=36, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=6, bias=True)
+    (act_1): Identity()
+  )
+)
+#params in ctrl: 288280
+#params in dstb: 285196
+#params in critic: 80386
+We want to use: cpu, and Agent uses: cpu
+Critic is using cuda:  False
+== Learning starts ==
+Checks at sample step 0:
+
+  => Saves central at train_result/go/model/central.
+[[ 1. nan nan nan nan nan nan nan nan nan nan  1.]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]
+ [nan nan nan nan nan nan nan nan nan nan nan nan]]
+  => Saves ctrl at train_result/go/model/ctrl.
+  => Saves dstb at train_result/go/model/dstb.
+375
+
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  => Saves central at train_result/go/model/central.
+  File "/Users/bboat/Desktop/rl_final_project/base_training.py", line 138, in learn
+  File "/Users/bboat/Desktop/rl_final_project/base_training.py", line 138, in learn
+Traceback (most recent call last):
+  File "train_isaacs.py", line 126, in <module>
+  File "train_isaacs.py", line 108, in main
+    env, eval_callback=eval_callback
+  File "/Users/bboat/Desktop/rl_final_project/base_training.py", line 138, in learn
+    obsrv_all = self.interact(rollout_env, obsrv_all, action_all)
+  File "/Users/bboat/Desktop/rl_final_project/ISAACS_TS.py", line 202, in interact
+    obsrv_nxt, r, done, info = rollout_env.step(action_all[0], cast_torch=True)
+  File "/Users/bboat/Desktop/rl_final_project/simulators/base_zs_env.py", line 72, in step
+    state_nxt, ctrl_clip, dstb_clip = self.agent.integrate_forward(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/agent.py", line 120, in integrate_forward
+    return self.dyn.integrate_forward(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/go2_dynamics_pybullet.py", line 700, in integrate_forward
+    base_state = self.robot.get_obs()
+  File "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/resources/go2.py", line 178, in get_obs
+    robot_body_linear_vel = (np.linalg.inv(rotmat) @ np.array(linear_vel).T)
+  File "<__array_function__ internals>", line 200, in inv
+  File "/Users/bboat/anaconda3/envs/gameplay/lib/python3.8/site-packages/numpy/linalg/linalg.py", line 538, in inv
+    ainv = _umath_linalg.inv(a, signature=signature, extobj=extobj)
+KeyboardInterrupt

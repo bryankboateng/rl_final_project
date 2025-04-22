@@ -14,7 +14,7 @@ import argparse
 from functools import partial
 from shutil import copyfile
 from omegaconf import OmegaConf
-from agent import ISAACS
+from ISAACS import ISAACSTrainer
 from utils import evaluate_zero_sum
 from simulators import PrintLogger, save_obj
 
@@ -70,7 +70,7 @@ def main(config_file):
 
   # Constructs solver.
   print("\n== Solver information ==")
-  solver = ISAACS(cfg.solver, cfg.arch, cfg.environment.seed) # solver independent of agent and env
+  solver = ISAACSTrainer(cfg.solver, cfg.arch, cfg.environment.seed) # solver independent of agent and env
   env.agent.policy = copy.deepcopy(solver.ctrl)
   print('#params in ctrl: {}'.format(sum(p.numel() for p in solver.ctrl.net.parameters() if p.requires_grad)))
   print('#params in dstb: {}'.format(sum(p.numel() for p in solver.dstb.net.parameters() if p.requires_grad)))

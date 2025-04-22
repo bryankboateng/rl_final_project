@@ -6,14 +6,18 @@ from typing import List, Dict, Union, Optional, Tuple
 import torch
 import copy
 import numpy as np
+import wandb
+import warnings
+import os
+
 
 from base_training import BaseTraining
-from utils import Batch
-from simulators import BaseEnv
+from utils import Batch, DummyPolicy
+from simulators import BaseZeroSumEnv, BaseEnv
 from simulators.vec_env.vec_env import VecEnvBase
-from simulators.policy import RandomPolicy
+from simulators.policy.random_policy import RandomPolicy
 
-class ISAACS(BaseTraining):
+class ISAACSTrainer(BaseTraining):
     """
     ISAACS agent with interleaved training and rollout.
 
@@ -38,29 +42,32 @@ class ISAACS(BaseTraining):
         self.cfg_arch = cfg_arch
         self.seed = seed
         
-        # self.ctrl = ...
         self.ctrl = self.actors['ctrl']
-        # self.dstb = ...
         self.dstb = self.actors['dstb']
-        # self.critic = ...
-        self.critic = self.actors['critic']
+        self.critic = self.critics['central']
 
+        self.save_top_k_ctrl = int(cfg_solver.save_top_k.ctrl)
+        self.save_top_k_dstb = int(cfg_solver.save_top_k.dstb)
+        # Always keeps the dummy dstb (no dstb) and has placeholder for the current.
+        self.aux_metric = cfg_solver.eval.aux_metric
+        self.leaderboard = np.full(
+            shape=(self.save_top_k_ctrl + 1, self.save_top_k_dstb + 2, 1 + len(self.aux_metric)), dtype=float,
+            fill_value=None
+    )
 
         # Checkpoint lists (step numbers)
         self.ctrl_ckpts = []
         self.dstb_ckpts = []
 
         # Initialize fixed policies
-        # self.rnd_ctrl_policy = ...
-        self.rnd_ctrl_policy = RandomPolicy(id='rnd_ctrl', action_range=self.ctrl.action_range, seed=self.seed)
-        # self.rnd_dstb_policy = ...
-        self.rnd_dstb_policy = RandomPolicy(id='rnd_dstb', action_range=self.dstb.action_range, seed=self.seed)
-        # self.dummy_dstb_policy = ...
-        self.dummy_dstb_policy = lambda obs: np.zeros(self.dstb.action_dim)
+        self.rnd_ctrl_policy = RandomPolicy(
+            id='rnd_ctrl', action_range=np.array(cfg_solver.warmup_action_range.ctrl, dtype=np.float32), seed=seed
+        )
+        self.dstb_sampler_list = [RandomPolicy(id='rnd_dstb', action_range=np.array(cfg_solver.warmup_action_range.dstb, dtype=np.float32), seed=self.seed)]
+        self.dummy_dstb_policy = DummyPolicy(id='dummy_dstb', action_dim=self.dstb.action_dim)
+        
         # Evaluation policy copies (for checkpoint loading)
-        # self.ctrl_eval = ...
         self.ctrl_eval = copy.deepcopy(self.ctrl)
-        # self.dstb_eval = ...
         self.dstb_eval = copy.deepcopy(self.dstb)
     
 
@@ -70,7 +77,42 @@ class ISAACS(BaseTraining):
         self.cnt_dstb_updates = 0  # Counts how many dstb updates since last ctrl update
 
         # Leaderboard: shape (K_ctrl + 1, K_dstb + 2, metrics)
-        self.leaderboard = -np.inf * np.ones((self.cfg_solver.K_ctrl + 1, self.cfg_solver.K_dstb + 2, 3))
+        self.leaderboard = np.nan * np.ones((self.save_top_k_ctrl + 1, self.save_top_k_dstb + 2, 3))
+        
+    def combine_action(self, ctrl_action: torch.Tensor, dstb_action: torch.Tensor) -> torch.Tensor:
+        """
+        Combines control and disturbance actions into a single tensor.
+
+        Args:
+            ctrl_action: Control action tensor.
+            dstb_action: Disturbance action tensor.
+
+        Returns:
+            Combined action tensor.
+        """
+        return torch.cat([ctrl_action, dstb_action], dim=-1)
+
+    def get_dstb_sampler(self) -> RandomPolicy:
+        """
+        Returns a new instance of the disturbance sampler.
+
+        This is used to sample disturbance actions for the current episode.
+        """
+        dtsb_idxs = np.array(list(range(len(self.dstb_ckpts))) + [-1]) #-1 to account for dummy dstb
+        logit = np.mean(self.leaderboard[:len(self.ctrl_ckpts), dtsb_idxs, 0], axis=0)  # Placeholder for the logit value
+        # Compute the softmax distribution over the disturbance policies.
+        prob_un = np.exp(-self.softmax_rationality * logit)  # negative here since dstb minimizes.
+        softmax_dist = prob_un / np.sum(prob_un) #minus sign on logits since the better dtsb minimizes scores
+        dtsb_idx = self.rng.choice(dtsb_idxs, p=softmax_dist)
+        # If the chosen index is -1, use the dummy disturbance policy.
+        if dtsb_idx == -1:
+            return self.dummy_dstb_policy
+        else:
+            # Otherwise, return the corresponding disturbance policy.
+            chosen_dstb = copy.deepcopy(self.dstb)
+            chosen_dstb.restore(self.dstb_ckpts[dtsb_idx], self.model_folder, verbose=False)
+            return chosen_dstb
+
 
     def sample(self, obsrv_all: torch.Tensor) -> List[Dict[str, np.ndarray]]:
         """
@@ -84,480 +126,468 @@ class ISAACS(BaseTraining):
         Returns:
             List of action dictionaries with 'ctrl' and 'dstb' keys
         """
-        # Determine whether to use random policies (warmup) or learned policies.
-        # if self.cnt_step < self.cfg_solver.warmup_steps:
-        #     # Use random policies for both ctrl and dstb
-        #     action_all = [
-        #         {'ctrl': self.rnd_ctrl_policy(obsrv), 'dstb': self.rnd_dstb_policy(obsrv)}
-        #         for obsrv in obsrv_all
-        #     ]
-        # else:
-        #     # Use learned policies for ctrl and dstb
-        #     action_all = [
-        #         {'ctrl': self.ctrl(obsrv), 'dstb': self.dstb(obsrv)}
-        #         for obsrv in obsrv_all
-        #     ]
+        obsrv_all = obsrv_all.float().to(self.device)
 
-        # Determine whether to use random policies (warmup) or learned policies.
-        if self.cnt_step < self.cfg_solver.warmup_steps:
-            # Warmup: use fixed random policies.
-            ctrl_actions = self.rnd_ctrl_policy(obsrv_all)
-            dstb_actions = self.rnd_dstb_policy(obsrv_all)
+        # Gets control actions.
+        if self.cnt_step < self.warmup_steps:  # Warms up with random actions.
+            ctrl_action_all, _ = self.rnd_ctrl_policy.get_action(obsrv_all)
         else:
-            # After warmup: use learned policies.
-            ctrl_actions = self.ctrl(obsrv_all)
-            dstb_actions = self.dstb(obsrv_all)
-            ctrl_actions = ctrl_actions.detach().cpu().numpy()
-            dstb_actions = dstb_actions.detach().cpu().numpy()
+            with torch.no_grad():
+                if self.ctrl.is_stochastic:
+                    ctrl_action_all, _ = self.ctrl.sample(obsrv_all, append=None, latent=None)
+                else:
+                    ctrl_action_all = self.ctrl.net(obsrv_all, append=None, latent=None)
+            ctrl_action_all = ctrl_action_all.cpu().numpy()  # (num_envs, ctrl_action_dim)
 
-        # Create a list of dictionaries, one per environment.
-        # Each dictionary has keys 'ctrl' and 'dstb'.
         action_all = []
-        batch_size = obsrv_all.shape[0]
-        for idx in range(batch_size):
-            action_all.append({
-                'ctrl': ctrl_actions[idx],
-                'dstb': dstb_actions[idx]
-            })
-        return action_all
+        dstb_sampler = self.dstb_sampler_list[0]
 
+        with torch.no_grad():
+            if dstb_sampler.is_stochastic:
+                assert not isinstance(dstb_sampler, DummyPolicy), "Dummy policy cannot be stochastic."
+                dstb_action, _ = dstb_sampler.sample(
+                    obsrv_all[0], agents_action={"ctrl": ctrl_action_all[0]}, append=None, latent=None
+                )  # (dstb_action_dim,)
+            else:
+                dstb_action, _ = dstb_sampler.get_action(
+                    obsrv_all[0], agents_action={"ctrl": ctrl_action_all[0]}, append=None, latent=None
+                )  # (dstb_action_dim,)
+        if isinstance(dstb_action, torch.Tensor):
+            dstb_action = dstb_action.cpu().numpy()
+            
+        action_all.append({'ctrl': ctrl_action_all[0], 'dstb': dstb_action})
+
+        return action_all    
+    
+    
     def interact(
-        self,
-        rollout_env: Union[BaseEnv, VecEnvBase],
-        obsrv_all: torch.Tensor,
-        action_all: List[Dict[str, np.ndarray]],
-    ) -> torch.Tensor:
-        """
-        Interacts with environment using sampled actions.
+        self, rollout_env: Union[BaseZeroSumEnv, VecEnvBase], obsrv_all: torch.Tensor, action_all: List[Dict[str,
+                                                                                                            np.ndarray]]
+    ):
 
-        Stores transitions in replay buffer, tracks safety violations, resets environments that are done,
-        and resamples disturbance agent for next episode.
+        if self.num_envs == 1:
+            obsrv_nxt, r, done, info = rollout_env.step(action_all[0], cast_torch=True)
+            obsrv_nxt_all = obsrv_nxt[None]
+            r_all = np.array([r])
+            done_all = np.array([done])
+            info_all = np.array([info])
+        else:
+            obsrv_nxt_all, r_all, done_all, info_all = rollout_env.step(action_all)
 
-        Returns:
-            obsrv_nxt_all: Tensor of next observations
-        """
-        # TODO: Step environment, store to replay buffer, update counters
-        # pass
-        obsrv_nxt_all, rewards, dones, infos = rollout_env.step(action_all)
-        rewards_tensor = torch.tensor(rewards, dtype=torch.float32)
-        dones_tensor = torch.tensor(dones, dtype=torch.bool)
-        # safety_violations = np.array([info.get('safety_violation', 0.0) for info in infos])
 
-        # Create a Batch instance with the transition.
-        transition = Batch(
-            obs=obsrv_all,
-            actions=action_all,
-            rewards=rewards_tensor,
-            next_obs=obsrv_nxt_all,
-            dones=dones_tensor,
-            infos=infos,
-        )
+        for env_idx, (done, info) in enumerate(zip(done_all, info_all)):
+        # Stores the transition in memory. Note that `obsrv` and `action` are cpu tensors.
+            action = {k: torch.FloatTensor(v[None]) for k, v in action_all[env_idx].items()}
+            self.store_transition(
+                obsrv_all[[env_idx]].cpu(), action, r_all[env_idx], obsrv_nxt_all[[env_idx]].cpu(), done, info
+            )
 
-        # Store transition in replay buffer
-        self.memory.update(transition)
-        # Update global step counter.
-        self.cnt_step += 1
+            if done:
+                if self.num_envs == 1:
+                    obsrv_nxt_all = rollout_env.reset(cast_torch=True)[None]
+                else:
+                    obsrv_nxt_all[env_idx] = rollout_env.reset_one(index=env_idx)
+                g_x = info['g_x']
+                if g_x < 0:
+                    self.cnt_safety_violation += 1
+                self.cnt_num_episode += 1
+                self.dstb_sampler_list[env_idx] = self.get_dstb_sampler()
 
-        # If any environments are done, reset them.
-        if any(dones):
-            # Identify which indices (environments) are done.
-            done_indices = [i for i, done in enumerate(dones) if done]
-            # Reset the done environments.
-            obsrv_reset = rollout_env.reset(indices=done_indices)
-            # Replace the corresponding entries in the next observations with the reset observations.
-            # This ensures that the replay buffer and the next state used by the agent reflect the reset state.
-            for idx, reset_obs in zip(done_indices, obsrv_reset):
-                obsrv_nxt_all[idx] = reset_obs
+        # Updates records.
+        self.violation_record.append(self.cnt_safety_violation)
+        self.episode_record.append(self.cnt_num_episode)
 
-            self.dstb.reset(done_indices)
-            # self.dstb_sampler_list[done_indices] = self.get_dstb_sampler()
-
+        # Updates counter.
+        self.cnt_step += self.num_envs
+        self.cnt_opt_period += self.num_envs
+        self.cnt_eval_period += self.num_envs
+        
         return obsrv_nxt_all
 
-    def update(self):
+
+    def update_one(
+        self, batch: Batch, timer: int, update_ctrl: bool,
+        update_dstb: bool = True
+    ) -> Tuple[float, float, float, float, float, float, float]:
         """
-        Runs training updates based on buffer data.
-
-        Updates are triggered when:
-        - self.cnt_step >= self.min_steps_b4_opt
-        - self.cnt_opt_period >= self.opt_period
-
-        Each update cycle:
-        - Runs `self.num_updates_per_opt` gradient steps
-        - Updates dstb every step
-        - Updates ctrl only every `ctrl_update_ratio` steps
-
-        Logs loss metrics and updates target networks.
-        """
-        # TODO: Sample batch and call update_one()
-        # Check `cnt_opt_period`, reset as needed
-        # pass
-        # Check if conditions are met for starting updates.
-        if self.cnt_step < self.cfg_solver.min_steps_b4_opt or self.cnt_opt_period < self.cfg_solver.opt_period:
-            return
-        
-        # Accumulate loss metrics for logging.
-        accumulated_losses = {
-            "q_loss": 0.0,
-            "ctrl_loss": 0.0,
-            "ent_ctrl_loss": 0.0,
-            "alpha_ctrl_loss": 0.0,
-            "dstb_loss": 0.0,
-            "ent_dstb_loss": 0.0,
-            "alpha_dstb_loss": 0.0
-        }
-        ctrl_updates = 0
-
-        # Number of update iterations to perform in this cycle.
-        num_updates = self.cfg_solver.num_updates_per_opt
-
-        for update_idx in range(num_updates):
-            # Determine whether to update ctrl on this step.
-            update_ctrl = (update_idx % self.cfg_solver.ctrl_update_ratio == 0)
-            # Always update disturbance agent.
-            update_dstb = True  
-
-            # Sample a batch from the replay buffer.
-            batch = self.memory.sample(self.cfg_solver.batch_size)
-
-            # Perform a single update step and obtain loss values.
-            # The update_one method should return a tuple with losses:
-            # (q_loss, ctrl_loss, ent_ctrl_loss, alpha_ctrl_loss, dstb_loss, ent_dstb_loss, alpha_dstb_loss)
-            losses = self.update_one(batch, update_idx, update_ctrl, update_dstb)
-
-            # Accumulate losses for logging.
-            if update_ctrl:
-                accumulated_losses["ctrl_loss"] += losses[1]
-                accumulated_losses["ent_ctrl_loss"] += losses[2]
-                accumulated_losses["alpha_ctrl_loss"] += losses[3]
-                ctrl_updates += 1
-            accumulated_losses["q_loss"] += losses[0]
-            accumulated_losses["dstb_loss"] += losses[4]
-            accumulated_losses["ent_dstb_loss"] += losses[5]
-            accumulated_losses["alpha_dstb_loss"] += losses[6]
-
-            # Compute average losses for logging.
-            avg_ctrl_loss = accumulated_losses["ctrl_loss"] / ctrl_updates if ctrl_updates > 0 else 0
-            avg_q_loss = accumulated_losses["q_loss"] / num_updates
-            avg_dstb_loss = accumulated_losses["dstb_loss"] / num_updates
-
-        # Where should we log the avg losses?
-
-        # After an update cycle, reset the optimization period counter.
-        self.cnt_opt_period = 0
-
-# I dont think the current critic network and target critic network are properly implemented right now.
-
-    def update_one(self, batch: Batch, timer: int, update_ctrl: bool, update_dstb: bool) -> Tuple[float, ...]:
-        """
-        Performs one update step for critic and optionally ctrl and dstb.
-
-        Uses SAC-style updates with entropy regularization and soft target updates.
+        Performs one update step on the critic and (optionally) the actor networks.
 
         Args:
-            batch: Transition batch from replay buffer
-            timer: Update step index within the current optimization cycle
-            update_ctrl: Flag to indicate ctrl should be updated this step
-            update_dstb: Flag to update dstb
+            batch (Batch): A batch of transitions from replay buffer.
+            timer (int): Current global step or update counter.
+            update_ctrl (bool): Whether to update the controller.
+            update_dstb (bool): Whether to update the disturbance agent.
 
         Returns:
-            Tuple of loss metrics: (q, ctrl, ent_ctrl, alpha_ctrl, dstb, ent_dstb, alpha_dstb)
+            Tuple of losses: 
+                (critic_loss,
+                ctrl_actor_loss, ctrl_entropy_loss, ctrl_alpha_loss,
+                dstb_actor_loss, dstb_entropy_loss, dstb_alpha_loss)
         """
-        # TODO: Compute gradients and losses for each network component
-        # pass
 
-        # Unpack the batch.
-        obs = batch.obs  # shape: (B, obs_dim)
+        ctrl_action = batch.action['ctrl']
+        dstb_action = batch.action['dstb']
 
-        # Extract rewards, next observations, and done flags.
-        rewards = batch.rewards  # shape: (B,)
-        next_obs = batch.next_obs  # shape: (B, obs_dim)
-        dones = batch.dones.float()  # shape: (B,)
+        # ---------------------- Critic Update ----------------------
+        self.critic.net.train()
+        self.critic.target.train()
+        self.ctrl.net.eval()
+        self.dstb.net.eval()
 
-        gamma = self.cfg_solver.gamma  # discount factor
+        with torch.no_grad():
+            ctrl_action_nxt, _ = self.ctrl.sample(batch.non_final_obsrv_nxt)
+            dstb_action_nxt, _ = self.dstb.sample(
+                batch.non_final_obsrv_nxt,
+                agents_action={"ctrl": ctrl_action_nxt.cpu().numpy()}
+            )
+        action = self.combine_action(ctrl_action, dstb_action)
+        action_nxt = self.combine_action(ctrl_action_nxt, dstb_action_nxt)
 
-        # Sample next actions and corresponding log probabilities from both policies.
-        current_ctrl_actions, current_ctrl_log_prob = self.ctrl.sample(obs)
-        current_dstb_actions, current_dstb_log_prob = self.dstb.sample(obs)
-        next_ctrl_actions, next_ctrl_log_prob = self.ctrl.sample(next_obs)
-        next_dstb_actions, next_dstb_log_prob = self.dstb.sample(next_obs)
+        q1, q2 = self.critic.net(batch.obsrv, action)
+        q1_nxt, q2_nxt = self.critic.target(batch.non_final_obsrv_nxt, action_nxt)
 
-        # Concatenate current actions.
-        current_actions = torch.cat([current_ctrl_actions, current_dstb_actions], dim=-1)
         
-        # Concatenate next actions.
-        next_actions = torch.cat([next_ctrl_actions, next_dstb_actions], dim=-1)
-
-        # Delete this? I think we have to sample instead of extract
-        # # Extract control and disturbance actions.
-        # ctrl_actions = torch.stack([torch.tensor(a['ctrl'], dtype=torch.float32) for a in batch.actions])
-        # dstb_actions = torch.stack([torch.tensor(a['dstb'], dtype=torch.float32) for a in batch.actions])
-        # # Concatenate along the last dimension for the critic.
-        # current_actions = torch.cat([ctrl_actions, dstb_actions], dim=-1)
-        
-        # Get Q-values for current states.
-        q1_current, q2_current = self.critic(obs, current_actions)
-
-        # Compute target Q-values using target networks.
-        q1_next, q2_next = self.critic.target(next_obs, next_actions)
-
-        # Compute target Q-values.
-        min_q_next = torch.min(q1_next, q2_next)
-
-        # Use control's entropy bonus in the target.
-        alpha_ctrl = self.ctrl.alpha  # typically computed as exp(log_alpha)
-        target_q = rewards + gamma * (1 - dones) * (min_q_next - alpha_ctrl * next_ctrl_log_prob)
-        target_q = target_q.detach()
-
-        # THIS PART SHOULD BE HANDLED IN ACTORS_AND_CRITICS.PY
-        # # Compute current Q estimates.
-        # q1, q2 = self.critic(obs, current_actions)
-        # critic_loss = torch.nn.functional.mse_loss(q1, target_q) + torch.nn.functional.mse_loss(q2, target_q)
-
-        # self.critic.optimizer.zero_grad()
-        # critic_loss.backward()
-        # self.critic.optimizer.step()
-
-        # Update critic
-        critic_loss = self.critic.update(
-            q1=q1_current,
-            q2=q2_current,
-            q1_nxt=q1_next,
-            q2_nxt=q2_next,
-            non_final_mask = ~dones.bool(),
-            reward=rewards,
-            g_x=torch.zeros_like(rewards), # Placeholder???
-            l_x=torch.zeros_like(rewards),
-            binary_cost=torch.zeros_like(rewards),
-            entropy_motives=None # What is this???
+        loss_q = self.critic.update(
+            q1=q1, q2=q2, q1_nxt=q1_nxt, q2_nxt=q2_nxt,
+            non_final_mask=batch.non_final_mask,
+            reward=batch.reward,
+            g_x=batch.info['g_x'],
+            l_x=batch.info['l_x'],
+            binary_cost=batch.info['binary_cost']
         )
 
-        # Initialize loss variables
-        ctrl_loss = torch.tensor(0.0, device=obs.device)
-        ent_ctrl_loss = torch.tensor(0.0, device=obs.device)
-        alpha_ctrl_loss = torch.tensor(0.0, device=obs.device)
-        dstb_loss = torch.tensor(0.0, device=obs.device)
-        ent_dstb_loss = torch.tensor(0.0, device=obs.device)
-        alpha_dstb_loss = torch.tensor(0.0, device=obs.device)
+        # ------------------ Controller (Ctrl) Update ------------------
+        if update_ctrl and timer % self.ctrl.update_period == 0:
+            update_alpha = self.cnt_step >= self.warmup_steps
 
-        # ----- Control Policy Update -----
-        if update_ctrl:
+            self.ctrl.net.train()
+            self.dstb.net.eval()
+            self.critic.net.eval()
 
-            # I'm pretty sure this should all be handled in actors_and_critics.py
+            ctrl_action_sample, log_prob = self.ctrl.sample(batch.obsrv)
 
-            # # Sample new control actions for current observations along with log probabilities.
-            # new_ctrl_actions, new_ctrl_log_prob = self.ctrl.sample(obs)
-            # # For the disturbance, either use the current policy or a fixed sample.
-            # new_dstb_actions, _ = self.dstb.sample(obs)
-            # new_actions = torch.cat([new_ctrl_actions, new_dstb_actions], dim=-1)
+            with torch.no_grad():
+                if self.dstb.obsrv_list is None:
+                    dstb_action_aux = self.dstb.net(batch.obsrv)
+                else:
+                    dstb_action_aux = self.dstb.net(batch.obsrv, action=ctrl_action_sample)
 
-            # # Compute Q-values for the current control actions.
-            # q1_ctrl, q2_ctrl = self.critic(obs, new_actions)
-            # min_q_ctrl = torch.min(q1_ctrl, q2_ctrl)
+            action_sample = self.combine_action(ctrl_action_sample, dstb_action_aux)
+            q1_sample, q2_sample = self.critic.net(batch.obsrv, action_sample)
 
-            # # SAC actor loss for ctrl: aiming to maximize Q + entropy.
-            # ctrl_loss = (self.ctrl.alpha * new_ctrl_log_prob - min_q_ctrl).mean()
-
-            # # Update control policy.
-            # self.ctrl.optimizer.zero_grad()
-            # ctrl_loss.backward()
-            # self.ctrl.optimizer.step()
-
-            # # Automatic entropy tuning for ctrl.
-            # target_entropy_ctrl = self.cfg_solver.target_entropy
-            # log_alpha_ctrl = self.ctrl.log_alpha  # assume this is a learnable parameter
-            # alpha_ctrl_loss = (-log_alpha_ctrl * (new_ctrl_log_prob + target_entropy_ctrl).detach()).mean()
-
-            # self.ctrl.alpha_optimizer.zero_grad()
-            # alpha_ctrl_loss.backward()
-            # self.ctrl.alpha_optimizer.step()
-            
-            ctrl_loss, ent_ctrl_loss, alpha_ctrl_loss = self.ctrl.update(
-            q1=q1_current,
-            q2=q2_current,
-            log_prob=current_ctrl_log_prob,
-            update_alpha=True
+            loss_ctrl, loss_ent_ctrl, loss_alpha_ctrl = self.ctrl.update(
+                q1=q1_sample, q2=q2_sample,
+                log_prob=log_prob,
+                update_alpha=update_alpha
             )
-        
         else:
-            ctrl_loss = torch.tensor(0.0, device=obs.device)
-            new_ctrl_log_prob = torch.tensor(0.0, device=obs.device)
-            alpha_ctrl_loss = torch.tensor(0.0, device=obs.device)
+            loss_ctrl = loss_ent_ctrl = loss_alpha_ctrl = 0.0
 
-        # ----- Disturbance Policy Update -----
-        if update_dstb:
+        # ------------------ Disturbance (Dstb) Update ------------------
+        if update_dstb and timer % self.dstb.update_period == 0:
+            update_alpha = self.cnt_step >= self.warmup_steps
 
-            # I'm pretty sure this should all be handled in actors_and_critics.py
+            self.dstb.net.train()
+            self.ctrl.net.eval()
+            self.critic.net.eval()
 
-            # # Sample new disturbance actions for current observations.
-            # new_dstb_actions, new_dstb_log_prob = self.dstb.sample(obs)
-            # # For stability, use a fixed control action (sampled with no gradient flow).
-            # with torch.no_grad():
-            #     fixed_ctrl_actions, _ = self.ctrl.sample(obs)
-            # new_actions_dstb = torch.cat([fixed_ctrl_actions, new_dstb_actions], dim=-1)
+            with torch.no_grad():
+                ctrl_action_aux = self.ctrl.net(batch.obsrv)
 
-            # # Compute Q-values for the current disturbance actions.
-            # q1_dstb, q2_dstb = self.critic(obs, new_actions_dstb)
-            # min_q_dstb = torch.min(q1_dstb, q2_dstb)
+            if self.dstb.obsrv_list is None:
+                dstb_action_sample, log_prob = self.dstb.net.sample(batch.obsrv)
+            else:
+                dstb_action_sample, log_prob = self.dstb.net.sample(batch.obsrv, action=ctrl_action_aux)
 
-            # # For an adversarial disturbance agent, we reverse the sign of the typical SAC objective.
-            # # The disturbance policy seeks to increase the critic's Q-value (i.e. worsen safety).
-            # dstb_loss = (-min_q_dstb - self.dstb.alpha * new_dstb_log_prob).mean()
+            action_sample = self.combine_action(ctrl_action_aux, dstb_action_sample)
+            q1_sample, q2_sample = self.critic.net(batch.obsrv, action_sample)
 
-            # # Update disturbance policy.
-            # self.dstb.optimizer.zero_grad()
-            # dstb_loss.backward()
-            # self.dstb.optimizer.step()
-
-            # # Automatic entropy tuning for disturbance.
-            # target_entropy_dstb = self.cfg_solver.target_entropy_dstb  # defined in config
-            # log_alpha_dstb = self.dstb.log_alpha  # learnable parameter
-            # alpha_dstb_loss = (log_alpha_dstb * (new_dstb_log_prob - target_entropy_dstb).detach()).mean()
-            # self.dstb.alpha_optimizer.zero_grad()
-            # alpha_dstb_loss.backward()
-            # self.dstb.alpha_optimizer.step()
-            
-            dstb_loss, ent_dstb_loss, alpha_dstb_loss = self.dstb.update(
-            q1=-q1_current, # Negate Q-values for adversarial objective
-            q2=-q2_current,
-            log_prob=current_dstb_log_prob,
-            update_alpha=True
+            loss_dstb, loss_ent_dstb, loss_alpha_dstb = self.dstb.update(
+                q1=q1_sample, q2=q2_sample,
+                log_prob=log_prob,
+                update_alpha=update_alpha
             )
-
         else:
-            dstb_loss = torch.tensor(0.0, device=obs.device)
-            new_dstb_log_prob = torch.tensor(0.0, device=obs.device)
-            alpha_dstb_loss = torch.tensor(0.0, device=obs.device)
+            loss_dstb = loss_ent_dstb = loss_alpha_dstb = 0.0
 
-        # Soft Update of Target Networks
-        self.critic.update_target()
+        # ------------------ Target Network Update ------------------
+        if timer % self.critic.update_target_period == 0:
+            self.critic.update_target()
 
-        # Return a tuple of loss values as floats.
+        # Set all networks to eval mode again
+        self.critic.net.eval()
+        self.ctrl.net.eval()
+        self.dstb.net.eval()
+
         return (
-            critic_loss.item(),        # q_loss
-            ctrl_loss.item(),          # ctrl_loss
-            ent_ctrl_loss.item(),      # ent_ctrl (proxy via log_prob)
-            alpha_ctrl_loss.item(),    # alpha_ctrl_loss
-            dstb_loss.item(),          # dstb_loss
-            ent_dstb_loss.item(),      # ent_dstb (proxy via log_prob)
-            alpha_dstb_loss.item()     # alpha_dstb_loss
+            loss_q,
+            loss_ctrl, loss_ent_ctrl, loss_alpha_ctrl,
+            loss_dstb, loss_ent_dstb, loss_alpha_dstb
         )
 
+    def update(self):
+        # Check whether it's time to run an update cycle
+        if self.cnt_step < self.min_steps_b4_opt or self.cnt_opt_period < self.opt_period:
+            return  # Not enough steps yet
 
-    def eval(self, env: BaseEnv, rollout_env: Union[BaseEnv, VecEnvBase], eval_callback, init_eval: bool = False) -> bool:
+        # Reset optimization period counter
+        self.cnt_opt_period = 0
+
+        # Determine whether to update the controller
+        update_ctrl = (self.cnt_dstb_updates == self.ctrl_update_ratio)
+        if update_ctrl:
+            self.cnt_dstb_updates = 0
+            loss_ctrl_all, loss_ent_ctrl_all, loss_alpha_ctrl_all = [], [], []
+        print(f"[Update] Step {self.cnt_step} | Update Controller: {update_ctrl}")
+
+        # Initialize loss trackers
+        loss_q_all = []
+        loss_dstb_all, loss_ent_dstb_all, loss_alpha_dstb_all = [], [], []
+
+        # Run multiple update steps
+        for timer in range(self.num_updates_per_opt):
+            # Try sampling a valid batch (with at least one non-terminal transition)
+            for _ in range(10):
+                batch = self.sample_batch()
+                if torch.any(batch.non_final_mask):
+                    break
+            else:
+                warnings.warn("Cannot get a valid batch after 10 attempts!", UserWarning)
+                continue
+
+            # Perform one joint update
+            loss_q, loss_ctrl, loss_ent_ctrl, loss_alpha_ctrl, loss_dstb, loss_ent_dstb, loss_alpha_dstb = self.update_one(
+                batch, timer, update_ctrl=update_ctrl
+            )
+
+            # Track critic and disturbance losses
+            loss_q_all.append(loss_q)
+            if timer % self.dstb.update_period == 0:
+                loss_dstb_all.append(loss_dstb)
+                loss_ent_dstb_all.append(loss_ent_dstb)
+                loss_alpha_dstb_all.append(loss_alpha_dstb)
+
+            # Track controller losses if it's being updated
+            if update_ctrl and timer % self.ctrl.update_period == 0:
+                loss_ctrl_all.append(loss_ctrl)
+                loss_ent_ctrl_all.append(loss_ent_ctrl)
+                loss_alpha_ctrl_all.append(loss_alpha_ctrl)
+
+        # Compute loss means
+        loss_q_mean = np.mean(loss_q_all)
+        loss_dstb_mean = np.mean(loss_dstb_all)
+        loss_ent_dstb_mean = np.mean(loss_ent_dstb_all)
+        loss_alpha_dstb_mean = np.mean(loss_alpha_dstb_all)
+
+        if update_ctrl:
+            loss_ctrl_mean = np.mean(loss_ctrl_all)
+            loss_ent_ctrl_mean = np.mean(loss_ent_ctrl_all)
+            loss_alpha_ctrl_mean = np.mean(loss_alpha_ctrl_all)
+        else:
+            loss_ctrl_mean = loss_ent_ctrl_mean = loss_alpha_ctrl_mean = None
+
+        # Store all loss statistics
+        self.loss_record.append([
+            loss_q_mean,
+            loss_ctrl_mean, loss_ent_ctrl_mean, loss_alpha_ctrl_mean,
+            loss_dstb_mean, loss_ent_dstb_mean, loss_alpha_dstb_mean
+        ])
+
+        # Logging (e.g., to wandb)
+        if self.use_wandb:
+            log_dict = {
+                "loss/critic": loss_q_mean,
+                "loss/dstb": loss_dstb_mean,
+                "loss/entropy_dstb": loss_ent_dstb_mean,
+                "loss/alpha_dstb": loss_alpha_dstb_mean,
+                "metrics/cnt_safety_violation": self.cnt_safety_violation,
+                "metrics/cnt_num_episode": self.cnt_num_episode,
+                "hyper_parameters/alpha_ctrl": self.ctrl.alpha,
+                "hyper_parameters/alpha_dstb": self.dstb.alpha,
+                "hyper_parameters/gamma": self.critic.gamma,
+            }
+            if update_ctrl:
+                log_dict.update({
+                    "loss/ctrl": loss_ctrl_mean,
+                    "loss/entropy_ctrl": loss_ent_ctrl_mean,
+                    "loss/alpha_ctrl": loss_alpha_ctrl_mean,
+                })
+            wandb.log(log_dict, step=self.cnt_step, commit=False)
+
+        # Increment disturbance update counter
+        self.cnt_dstb_updates += 1
+
+
+
+    def update_ctrl_agent(
+        self, env: BaseZeroSumEnv, rollout_env: BaseZeroSumEnv, ctrl_ckpt_step: int
+    ):
         """
-        Evaluates the current policy against saved checkpoints and dummy adversary.
+        Updates the controller policy in the environment and rollout environment.
 
-        Evaluation is triggered:
-        - If init_eval is True (before training begins)
-        - If cnt_eval_period >= eval_period
+        Args:
+            env (BaseZeroSumEnv): Environment used for evaluation.
+            rollout_env (BaseZeroSumEnv): Environment used for rollouts.
+            ctrl_ckpt_step (int): The checkpoint step of the controller.
+        """
+        # Load latest controller policy
+        if ctrl_ckpt_step == self.cnt_step:
+            self.ctrl_eval.update_policy(self.ctrl)
+        else:
+            self.ctrl_eval.restore(ctrl_ckpt_step, self.model_folder, verbose=False)
 
-        Updates leaderboard metrics and logs scores to wandb.
+        # Update environment agents with the restored controller
+        env.agent.policy.update_policy(self.ctrl_eval)
+        rollout_env.agent.policy.update_policy(self.ctrl_eval)
+
+
+    def update_leaderboard(self, eval_results: dict, ctrl_idx: int, dstb_idx: int):
+        """Updates leaderboard.
+        """
+        self.leaderboard[ctrl_idx, dstb_idx, 0] = eval_results[self.eval_metric]
+        for metric_idx, aux_metric_name in enumerate(self.aux_metric):
+            self.leaderboard[ctrl_idx, dstb_idx, 1 + metric_idx] = eval_results[aux_metric_name]
+
+
+    def update_dstb_agent(self, dstb_ckpt_step: int):
+        if dstb_ckpt_step == self.cnt_step:
+            self.dstb_eval.update_policy(self.dstb)
+        else:
+            self.dstb_eval.restore(dstb_ckpt_step, self.model_folder, verbose=False)
+
+
+    def prune_leaderboard(self):
+        self.critic.save(self.cnt_step, self.model_folder)  # Always saves critic checkpoints.
+        with np.printoptions(precision=3, suppress=False):
+            print(self.leaderboard[..., 0])
+        if len(self.ctrl_ckpts) == self.save_top_k_ctrl:
+            ctrl_avg_metric = np.nanmean(self.leaderboard[..., 0], axis=1)
+            ctrl_idx = np.argmin(ctrl_avg_metric)  # Removes the ctrl ckpt that has the minimum average metric.
+            with np.printoptions(precision=3, suppress=False):
+                print("ctrl results", ctrl_avg_metric)
+            if ctrl_idx != self.save_top_k_ctrl:
+                print(f'Saving current ctrl by removing {ctrl_idx}')
+                self.ctrl.remove(self.ctrl_ckpts[ctrl_idx], self.model_folder)
+                self.ctrl_ckpts[ctrl_idx] = self.cnt_step
+                self.leaderboard[ctrl_idx] = self.leaderboard[-1]
+                self.ctrl.save(self.cnt_step, self.model_folder)
+        else:
+            # Save the current controller checkpoint
+            self.ctrl_ckpts.append(self.cnt_step)
+            self.ctrl.save(self.cnt_step, self.model_folder)
+
+        if len(self.dstb_ckpts) == self.save_top_k_dstb:
+            dstb_avg_metric = np.nanmean(self.leaderboard[:, :-1, 0], axis=0)
+            dstb_idx = np.argmax(dstb_avg_metric)  # Removes the dstb ckpt that has the maximum average metric.
+            with np.printoptions(precision=3, suppress=False):
+                print("dstb results", dstb_avg_metric)
+            if dstb_idx != self.save_top_k_dstb:
+                print(f'Saving current dstb by removin {dstb_idx}')
+                self.dstb.remove(self.dstb_ckpts[dstb_idx], self.model_folder)
+                self.dstb_ckpts[dstb_idx] = self.cnt_step
+                self.leaderboard[:, dstb_idx] = self.leaderboard[:, -2]
+                self.dstb.save(self.cnt_step, self.model_folder)
+        else:
+            self.dstb_ckpts.append(self.cnt_step)
+            self.dstb.save(self.cnt_step, self.model_folder)
+        print()
+    
+    
+    def update_hyper_param(self):
+        self.ctrl.update_hyper_param()  # lr_pi, lr_alpha
+        self.dstb.update_hyper_param()  # lr_pi, lr_alpha
+        flag_rst_alpha = self.critic.update_hyper_param()  # lr_q, gamma
+        if flag_rst_alpha:
+            self.ctrl.reset_alpha()
+            self.dstb.reset_alpha()
+    
+    
+    def eval(
+        self,
+        env: BaseZeroSumEnv,
+        rollout_env: Union[BaseZeroSumEnv, VecEnvBase],
+        eval_callback,
+        init_eval: bool = False
+    ) -> bool:
+        """
+        Evaluate the current policies against saved checkpoints and log leaderboard metrics.
 
         Returns:
-            True if evaluation occurred, False otherwise
+            bool: True if evaluation was performed, False otherwise.
         """
-        # TODO: Loop over ctrl/dstb ckpts and evaluate matchups
-        # pass
-        # Check if evaluation conditions are met.
-        if not init_eval and self.cnt_eval_period < self.cfg_solver.eval_period:
+        if self.cnt_eval_period < self.eval_period and not init_eval:
             return False
-        
-        # NOT IMPLEMENTED YET
-        # Number of episodes to run per evaluation matchup.
-        num_episodes = self.cfg_solver.eval_episodes
 
-        # Dictionary to store evaluation scores.
-        eval_scores = {}
-
-        # --- Evaluate matchups between stored checkpoint policies ---
-        for ctrl_idx, ctrl_ckpt in enumerate(self.ctrl_ckpts):
-            # Restore the control checkpoint into the evaluation copy.
-            self.ctrl_eval.restore(ctrl_ckpt, self.cfg_solver.model_folder)
-
-            for dstb_idx, dstb_ckpt in enumerate(self.dstb_ckpts):
-                self.dstb_eval.restore(dstb_ckpt, self.cfg_solver.model_folder)
-                matchup_score = self.evaluate_matchup(self.ctrl_eval, self.dstb_eval, env, num_episodes)
-                # Use indices in the key names for clarity.
-                key = f"ctrl_idx_{ctrl_idx}_vs_dstb_idx_{dstb_idx}"
-                eval_scores[key] = matchup_score
-
-        ADD TO LEADERBOARD!!!!
-
-        # Reset evaluation period counter.
+        print(f"\n[Eval] Running evaluation at step {self.cnt_step}")
         self.cnt_eval_period = 0
+
+        cur_ctrl_idx = len(self.ctrl_ckpts)
+        cur_dstb_idx = len(self.dstb_ckpts)
+
+        # === (1) Current disturbance vs. all controller checkpoints ===
+        self.update_dstb_agent(dstb_ckpt_step=self.cnt_step)
+        for ctrl_idx, ctrl_ckpt_step in enumerate(self.ctrl_ckpts):
+            self.update_ctrl_agent(env, rollout_env, ctrl_ckpt_step=ctrl_ckpt_step)
+            fig_path = os.path.join(self.figure_folder, f"{ctrl_ckpt_step}_{self.cnt_step}.png")
+            eval_results = eval_callback(env=env, rollout_env=rollout_env, value_fn=self.value,
+                                        adversary=self.dstb_eval, fig_path=fig_path)
+            self.update_leaderboard(eval_results, ctrl_idx, cur_dstb_idx)
+
+        # === (2) Current controller vs. all disturbance checkpoints ===
+        self.update_ctrl_agent(env, rollout_env, ctrl_ckpt_step=self.cnt_step)
+        for dstb_idx, dstb_ckpt_step in enumerate(self.dstb_ckpts):
+            self.update_dstb_agent(dstb_ckpt_step=dstb_ckpt_step)
+            fig_path = os.path.join(self.figure_folder, f"{self.cnt_step}_{dstb_ckpt_step}.png")
+            eval_results = eval_callback(env=env, rollout_env=rollout_env, value_fn=self.value,
+                                        adversary=self.dstb_eval, fig_path=fig_path)
+            self.update_leaderboard(eval_results, cur_ctrl_idx, dstb_idx)
+
+        # === (3) Current controller vs. current disturbance ===
+        self.update_dstb_agent(dstb_ckpt_step=self.cnt_step)
+        fig_path = os.path.join(self.figure_folder, f"{self.cnt_step}_{self.cnt_step}.png")
+        eval_results = eval_callback(env=env, rollout_env=rollout_env, value_fn=self.value,
+                                    adversary=self.dstb_eval, fig_path=fig_path)
+        self.update_leaderboard(eval_results, cur_ctrl_idx, cur_dstb_idx)
+
+        # === (4) Current controller vs. dummy disturbance ===
+        fig_path = os.path.join(self.figure_folder, f"{self.cnt_step}_dummy.png")
+        eval_results = eval_callback(env=env, rollout_env=rollout_env, value_fn=self.value,
+                                    adversary=self.dummy_dstb_policy, fig_path=fig_path)
+        self.update_leaderboard(eval_results, cur_ctrl_idx, -1)
+
+        # === (5) Compute and log leaderboard summary ===
+        log_dict = {
+            f"eval/{self.eval_metric}_ctrl": np.nanmean(self.leaderboard[cur_ctrl_idx, :, 0]),
+            f"eval/{self.eval_metric}_dstb": np.nanmean(self.leaderboard[:, cur_dstb_idx, 0])
+        }
+        for metric_idx, aux_metric_name in enumerate(self.aux_metric):
+            log_dict[f"eval/{aux_metric_name}_ctrl"] = np.nanmean(
+                self.leaderboard[cur_ctrl_idx, :, metric_idx + 1])
+            log_dict[f"eval/{aux_metric_name}_dstb"] = np.nanmean(
+                self.leaderboard[:, cur_dstb_idx, metric_idx + 1])
+
+        self.eval_record.append(list(log_dict.values()))
+        self.prune_leaderboard()
+
+        if self.use_wandb:
+            wandb.log(log_dict, step=self.cnt_step, commit=True)
 
         return True
 
-
-    def evaluate_matchup(self, ctrl_policy, dstb_policy, env: BaseEnv, num_episodes: int) -> float:
-        """
-        Evaluates a matchup between a control policy and a disturbance policy over a fixed number of episodes.
-        
-        Args:
-            ctrl_policy: A policy (or an object with a get_action or sample method) for controlling the agent.
-            dstb_policy: A policy (or lambda/dummy function) for generating disturbance actions.
-            env: The environment to run the evaluation on.
-            num_episodes: Number of episodes for the evaluation.
-
-        Returns:
-            A scalar evaluation score (e.g., average win rate or safety metric).
-        """
-        total_score = 0.0
-        for _ in range(num_episodes):
-            obs = env.reset()
-            done = False
-            episode_score = 0.0
-            while not done:
-                # Obtain control action (assume ctrl_policy returns an action) and disturbance action.
-                ctrl_action = ctrl_policy.get_action(obs)[0] 
-                dstb_action = dstb_policy.get_action(obs)[0]
-                # Combine actions into a single dictionary.
-                action = {"ctrl": ctrl_action, "dstb": dstb_action}
-                obs, reward, done, info = env.step(action)
-                episode_score += reward
-            total_score += episode_score
-        average_score = total_score / num_episodes
-        return average_score
-
-    
-
-
-    def update_hyper_param(self):
-        """
-        Updates learning rate, discount factor, or entropy alpha values dynamically.
-
-        Typically called every timestep.
-        """
-        # TODO: Update hyperparameters using ctrl, dstb, and critic methods
-        pass
-
-    def prune_leaderboard(self):
-        """
-        Maintains top-k models in leaderboard by pruning worst performers.
-
-        Uses average win rate to evaluate whether current checkpoint is worth keeping.
-        """
-        # TODO: Update self.ctrl_ckpts and self.dstb_ckpts, and call .save()/.remove()
-        pass
-
     def save(self, max_model: Optional[int] = None):
-        """
-        Saves ctrl, dstb, and critic models to disk under model_folder.
-        """
-        # TODO: Save networks with current self.cnt_step
-        pass
+        self.ctrl.save(self.cnt_step, self.model_folder, max_model)
+        self.dstb.save(self.cnt_step, self.model_folder, max_model)
+        self.critic.save(self.cnt_step, self.model_folder, max_model)
 
     def value(self, obsrv: np.ndarray, append: Optional[np.ndarray] = None) -> np.ndarray:
-        """
-        Computes value of state using current ctrl + dstb + critic.
+        obsrv_tensor = torch.FloatTensor(obsrv).to(self.device)
+        with torch.no_grad():
+            ctrl_action = self.ctrl.net(obsrv_tensor)
+            dstb_action = self.dstb.net(obsrv_tensor)
+        action = self.combine_action(ctrl_action, dstb_action)
+        return self.critic.value(obsrv_tensor, action, append=append)
 
-        Used during evaluation callback.
-
-        Returns:
-            Value estimates as a NumPy array
-        """
-        # TODO: Forward pass through critic using composed actions
-        pass
-
+    def init_learn(self, env: BaseEnv) -> Union[BaseEnv, VecEnvBase]:
+        self.cnt_dstb_updates = 0
+        return super().init_learn(env)
 

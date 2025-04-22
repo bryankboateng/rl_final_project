@@ -10,7 +10,7 @@ import os
 import copy
 import argparse
 from omegaconf import OmegaConf
-from agent import ISAACS
+from ISAACS import ISAACSTrainer
 from utils import get_model_index
 
 
@@ -51,7 +51,7 @@ def main(args):
 
   # Constructs solver.
   print("\n== Solver information ==")
-  solver = ISAACS(cfg.solver, cfg.arch, cfg.environment.seed)
+  solver = ISAACSTrainer(cfg.solver, cfg.arch, cfg.environment.seed)
   env.agent.policy = copy.deepcopy(solver.ctrl)
   print('#params in ctrl: {}'.format(sum(p.numel() for p in solver.ctrl.net.parameters() if p.requires_grad)))
   print('#params in dstb: {}'.format(sum(p.numel() for p in solver.dstb.net.parameters() if p.requires_grad)))

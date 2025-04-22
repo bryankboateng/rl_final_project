@@ -32,10 +32,31 @@ from utils import save_model, StepLRMargin
 from torch.optim.lr_scheduler import StepLR
 from utils_implemented import *
 
+class Sin(nn.Module):
+  """
+  Sin: Wraps element-wise `sin` activation as a nn.Module.
+
+  Shape:
+      - Input: `(N, *)` where `*` means, any number of additional dimensions
+      - Output: `(N, *)`, same shape as the input
+
+  Examples:
+      >>> m = Sin()
+      >>> input = torch.randn(2)
+      >>> output = m(input)
+  """
+
+  def __init__(self):
+    super().__init__()  # init the base class
+
+  def forward(self, input: torch.Tensor) -> torch.Tensor:
+    return torch.sin(input)
+
 activation_dict = nn.ModuleDict({
     "ReLU": nn.ReLU(),
     "Tanh": nn.Tanh(),
-    "Identity": nn.Identity()
+    "Identity": nn.Identity(),
+    "Sin": Sin()
 })
 
 
@@ -55,8 +76,7 @@ class MLP(nn.Module):
     Args:
         dim_list (list of integers): the dimension of each layer.
         activation_type (str, optional): type of activation. Support 'Sin', 'Tanh' and 'ReLU'. Defaults to 'Tanh'.
-        out_activation_type (str, optional): type of output activation. Support 'Sin', 'Tanh' and 'ReLU'. Defaults to
-            'Tanh'.
+        out_activation_type (str, optional): Identity
         use_ln (bool, optional): uses layer normalization or not. Defaults to False.
         use_spec (bool, optional): uses spectral normalization or not. Defaults to False.
         use_bn (bool, optional): uses batch normalization or not. Defaults to False.
@@ -99,48 +119,104 @@ def tie_weights(src, trg):
   trg.bias = src.bias
 
 
+# def get_mlp_input(
+#     obsrv: Union[np.ndarray, torch.Tensor],
+#     device: torch.device,
+#     action: Optional[Union[np.ndarray, torch.Tensor]] = None,
+# ) -> Tuple[torch.Tensor, bool, int]:
+#     """
+#     Converts inputs (possibly numpy arrays) to torch tensors on the given device
+#     and concatenates them. Also tracks whether the input was originally numpy
+#     (np_input) and how many dimensions were artificially expanded (num_extra_dim).
+
+#     Args:
+#         obsrv: Observation data (np.ndarray or torch.Tensor).
+#         device: Target device for new tensor.
+#         action: Action data (optional).
+
+
+#     Returns:
+#         (processed_input, np_input, num_extra_dim)
+#     """
+#     # HINT:
+#     # 1. Check if obsrv is numpy => convert to torch FloatTensor => move to device.
+#     # 2. Do the same for action
+#     # 3. Possibly unsqueeze(0) if input has shape [dim] instead of [batch, dim].
+#     # 4. Concat them along last dimension (e.g. dim=-1).
+#     # 5. Keep track if obsrv was originally numpy (np_input = True/False).
+#     # 6. Keep track of how many dimensions you had to add (num_extra_dim).
+#     # 7. Return (processed_input, np_input, num_extra_dim).
+    
+#     np_input = False
+    
+#     if isinstance(obsrv, np.ndarray):
+#         obsrv = torch.FloatTensor(obsrv).to(device)
+#         np_input = True
+        
+#     if len(obsrv.shape) == 1:
+#         obsrv = obsrv.unsqueeze(0)
+#         num_extra_dim = 1
+        
+#     if action is not None:
+#         if isinstance(action, np.ndarray):
+#             action = torch.FloatTensor(action).to(device)
+#         obsrv = torch.concat((obsrv, action), dim=-1)
+    
+#     return obsrv, np_input, num_extra_dim
+
+
 def get_mlp_input(
     obsrv: Union[np.ndarray, torch.Tensor],
-    device: torch.device,
-    action: Optional[Union[np.ndarray, torch.Tensor]] = None,
+    action: Optional[Union[np.ndarray, torch.Tensor]] = None, #perhaps from other agents
+    device=torch.device("cpu"),
 ) -> Tuple[torch.Tensor, bool, int]:
-    """
-    Converts inputs (possibly numpy arrays) to torch tensors on the given device
-    and concatenates them. Also tracks whether the input was originally numpy
-    (np_input) and how many dimensions were artificially expanded (num_extra_dim).
+  """
+  Transforms inputs of the Q-network or policy into torch Tensor on the desired
+  device. Concatenates action, append, latent if provided.
 
-    Args:
-        obsrv: Observation data (np.ndarray or torch.Tensor).
-        device: Target device for new tensor.
-        action: Action data (optional).
+  Args:
+      obsrv (np.ndarray or torch.Tensor): observation of the system.
+      action (np.ndarray or torch.Tensor, optional): action taken. Defaults to
+          None.
+      append (np.ndarray or torch.Tensor, optional): extra information appended
+          to the MLP. Defaults to None.
+      latent (np.ndarray or torch.Tensor, optional): information about the
+          environment. Defaults to None.
+      device (torch.device, optional): torch device. Defaults to
+          torch.device("cpu").
 
-
-    Returns:
-        (processed_input, np_input, num_extra_dim)
-    """
-    # HINT:
-    # 1. Check if obsrv is numpy => convert to torch FloatTensor => move to device.
-    # 2. Do the same for action
-    # 3. Possibly unsqueeze(0) if input has shape [dim] instead of [batch, dim].
-    # 4. Concat them along last dimension (e.g. dim=-1).
-    # 5. Keep track if obsrv was originally numpy (np_input = True/False).
-    # 6. Keep track of how many dimensions you had to add (num_extra_dim).
-    # 7. Return (processed_input, np_input, num_extra_dim).
-    if isinstance(obsrv, np.ndarray):
-        obsrv = torch.FloatTensor(obsrv).to(device)
-        np_input = True
-        
-    if len(obsrv.shape) == 1:
-        obsrv = obsrv.unsqueeze(0)
-        num_extra_dim = 1
-        
-    if action is not None:
-        if isinstance(action, np.ndarray):
-            action = torch.FloatTensor(action).to(device)
-        obsrv = torch.concat((obsrv, action), dim=-1)
+  Returns:
+      torch.Tensor: input to the Q-network or policy.
+      bool: cast the output to numpy if True.
+      int: the number of extra dimension to be squeezed.
+  """
+  np_input = False
+  if isinstance(obsrv, np.ndarray):
+    obsrv = torch.FloatTensor(obsrv).to(device)
+    np_input = True
+  else:
+    obsrv = obsrv.to(device)
     
-    return obsrv, np_input, num_extra_dim
+  if action is not None:
+    if isinstance(action, np.ndarray):
+      action = torch.FloatTensor(action).to(device)
+    else:
+      action = action.to(device)  
+    assert obsrv.dim() == action.dim()
+    
 
+  num_extra_dim = 0
+  if obsrv.dim() == 1:
+    obsrv = obsrv.unsqueeze(0)
+    if action is not None:
+      action = action.unsqueeze(0)
+    num_extra_dim += 1
+
+  if action is not None:
+    obsrv = torch.cat((obsrv, action), dim=-1)
+
+
+  return obsrv, np_input, num_extra_dim
 
 ########################################################
 # Twinned Q-network
@@ -213,7 +289,7 @@ class TwinnedQNetwork(nn.Module):
         # After forward pass, we can "undo" those expansions with squeeze()
         # and convert back to np if needed.
 
-        processed_input, np_input, num_extra_dim = get_mlp_input(obsrv, self.device, action)
+        processed_input, np_input, num_extra_dim = get_mlp_input(obsrv, action=action, device=self.device)
         q1 = self.Q1(processed_input)
         q2 = self.Q2(processed_input)
         if num_extra_dim > 0:
@@ -315,7 +391,7 @@ class GaussianPolicy(nn.Module):
         # 6. Possibly convert to numpy.
         # 7. return scaled_action
         
-        processed_input, np_input, num_extra_dim = get_mlp_input(obsrv, self.device)
+        processed_input, np_input, num_extra_dim = get_mlp_input(obsrv, device=self.device)
         a_unbounded = self.mean(processed_input)
         
         a_tanh = torch.tanh(a_unbounded)
@@ -361,7 +437,7 @@ class GaussianPolicy(nn.Module):
         # 8. Squeeze dimension if needed. Convert to np if needed.
         # 9. return (action, log_prob)
         
-        processed_input, np_input, num_extra_dim = get_mlp_input(obsrv, self.device)
+        processed_input, np_input, num_extra_dim = get_mlp_input(obsrv, device=self.device)
         mean_val = self.mean(processed_input)
         log_std_val = self.log_std(processed_input)
         log_std_val = torch.clamp(log_std_val, self.LOG_STD_MIN, self.LOG_STD_MAX)
@@ -371,8 +447,17 @@ class GaussianPolicy(nn.Module):
         yt = torch.tanh(xt)  # y = tanh(x) --> p(y) = p(tanh(x)) * |d(tanh(x))/dx|^(-1) transformation rule for probability
         action = self.scale * yt + self.bias
         log_prob = dist.log_prob(xt)
-        log_prob -= torch.log(self.max_action * (1 - yt.pow(2)) + self.eps)  #d[tanh(x)]/dx = sech^2(x) = 1 - tanh^2(x)
-        log_prob = log_prob.sum(1, keepdim=True)
+        log_prob -= torch.log(self.scale * (1 - yt.pow(2)) + self.eps)  #d[tanh(x)]/dx = sech^2(x) = 1 - tanh^2(x)
+        if log_prob.dim() > 1: log_prob = log_prob.sum(1, keepdim=True)
+        else: log_prob = log_prob.sum()
+        
+        if num_extra_dim > 0:
+            action = action.squeeze(0)
+            log_prob = log_prob.squeeze(0)
+        if np_input:
+            action = action.detach().cpu().numpy()
+            log_prob = log_prob.detach().cpu().numpy()
+
         
         return action, log_prob
         
@@ -515,9 +600,9 @@ class Actor(BaseBlock, BasePolicy):
         # 1. Define action_dim, action_range, actor_type from cfg_arch/cfg.
         # 2. Possibly define self.update_period, if not in evaluation mode.
         # 3. Call self.build_network(...) with relevant params.
-        self.action_dim = cfg_arch.action_dim
-        self.action_range = cfg_arch.action_range
-        self.actor_type = cfg_arch.actor_type
+        self.action_dim = int(cfg_arch.action_dim)
+        self.action_range = np.array(cfg_arch.action_range, dtype=np.float32)
+        self.actor_type = cfg.actor_type
         
         if not self.eval:
             self.update_period = cfg.update_period
@@ -561,7 +646,7 @@ class Actor(BaseBlock, BasePolicy):
             mlp_dim=cfg_arch.mlp_dim,
             action_dim=cfg_arch.action_dim,
             action_range=self.action_range,
-            activation_type=cfg_arch.activation_type,
+            activation_type=cfg_arch.activation,
             device=self.device,
             verbose=verbose
         )
@@ -655,34 +740,43 @@ class Actor(BaseBlock, BasePolicy):
         # 5. Return the scalar losses for logging.
 
         # Combine Q-values depending on actor type
-        if self.actor_type == "min":
-           q_eval = torch.min(q1, q2)
-        else:
+        if self.actor_type == "min": # Use max operator for min actor for debiasing and vice-versa
            q_eval = torch.max(q1, q2)
+        else:
+           q_eval = torch.min(q1, q2)
 
         # Compute policy loss
-        loss_q_eval = (self.alpha.detach() * log_prob - q_eval).mean()
+        loss_entropy = (self.alpha * log_prob.view(-1)).mean()
+        
+        if self.actor_type == "min": loss_q_eval = q_eval.mean()
+        else: loss_q_eval = -q_eval.mean()
+        
+        if update_alpha: loss = loss_entropy + loss_q_eval
+        else: loss = loss_q_eval
+
 
         self.optimizer.zero_grad()
-        loss_q_eval.backward()
+        loss.backward()
         self.optimizer.step()
         
         # Compute entropy loss
         loss_entropy = -(self.alpha * log_prob).mean()
         
+        # Compute alpha loss
+        loss_alpha = (self.alpha * (-log_prob - self.target_entropy).detach()).mean()
         # Update alpha if needed
         if self.learn_alpha and update_alpha:
-           loss_alpha = (self.alpha * (-log_prob - self.target_entropy).detach()).mean()
            self.log_alpha_optimizer.zero_grad()
            loss_alpha.backward()
            self.log_alpha_optimizer.step()
-        else:
-           loss_alpha = torch.tensor(0.0, device=self.device)
+           # Need to clamp log_alpha to [min_alpha, init_alpha]
+           self.log_alpha.data = torch.clamp(self.log_alpha, self.min_alpha, self.init_alpha)
+
         
-        return loss_q_eval.item(), loss_entropy.item(), loss_alpha.item()
+        return loss.item(), loss_entropy.item(), loss_alpha.item()
 
 
-    def update_policy(self, actor: "Actor"):
+    def update_policy(self, actor):
         """
         Hard-updates this actor's network weights from another actor's network.
         Typically used in multi-agent or target-network scenarios.
@@ -691,16 +785,14 @@ class Actor(BaseBlock, BasePolicy):
         # 1. self.net.load_state_dict(actor.net.state_dict())
         # 2. Possibly handle other parameters like alpha, log_alpha, etc.
         self.net.load_state_dict(actor.net.state_dict())
-        self.alpha = actor.alpha.clone()
-        self.log_alpha = actor.log_alpha.clone()
+
 
 
     def get_action(
         self,
         obsrv: Union[np.ndarray, torch.Tensor],
         agents_action: Optional[Dict[str, np.ndarray]] = None,
-        append: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        latent: Optional[Union[np.ndarray, torch.Tensor]] = None,
+
         **kwargs,
     ) -> Tuple[np.ndarray, Dict]:
         """
@@ -724,24 +816,11 @@ class Actor(BaseBlock, BasePolicy):
         # 3. Convert any torch.Tensor output to numpy if needed.
         # 4. Return (action, dict(t_process=..., status=...)).
 
-        # start_time = time.time() Do we need to track processing time for output?
 
-        # Handle additional inputs
-        if append is not None:
-           obsrv = np.concatenate([obsrv, append], axis=-1)
-        
-        if latent is not None:
-           obsrv = np.concatenate([obsrv, latent], axis=-1)
-        
-        # Handle other agents' actions
-        if self.obsrv_list is not None:
-           combined_obsrv = np.concatenate([obsrv, self.combine_actions(self.obsrv_list, agents_action)], axis=-1)
-        else:
-           combined_obsrv = obsrv
         
         # Get deterministic action
         with torch.no_grad():
-           action = self.net(torch.FloatTensor(combined_obsrv))
+           action = self.net(torch.FloatTensor(obsrv))
         
         if isinstance(action, torch.Tensor):
            action = action.cpu().numpy()
@@ -752,9 +831,6 @@ class Actor(BaseBlock, BasePolicy):
     def sample(
         self,
         obsrv: Union[np.ndarray, torch.Tensor],
-        agents_action: Optional[Dict[str, np.ndarray]] = None,
-        append: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        latent: Optional[Union[np.ndarray, torch.Tensor]] = None,
         **kwargs,
     ) -> Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor]]:
         """
@@ -776,23 +852,10 @@ class Actor(BaseBlock, BasePolicy):
         # 2. If self.is_stochastic: call self.net.sample(...)
         # 3. Else, raise error or do something else if policy is not stochastic.
 
-        # Handle additional inputs
-        if append is not None:
-           obsrv = np.concatenate([obsrv, append], axis=-1)
-        
-        if latent is not None:
-           obsrv = np.concatenate([obsrv, latent], axis=-1)
-
-        # Handle other agents' actions
-        if self.obsrv_list is not None:
-           combined_obsrv = np.concatenate([obsrv, self.combine_actions(self.obsrv_list, agents_action)], axis=-1)
-        
-        else:
-           combined_obsrv = obsrv
 
         # Sample action and log_prob
         if self.is_stochastic:
-           sampled_action, log_prob = self.net.sample(torch.FloatTensor(combined_obsrv))
+           sampled_action, log_prob = self.net.sample(torch.FloatTensor(obsrv))
         else:
             raise ValueError("Policy not stochastic")
         
@@ -853,8 +916,7 @@ class Critic(BaseBlock):
         #    else: create a deepcopy => self.target = copy.deepcopy(self.net) => build_optimizer(cfg).
 
         self.net = TwinnedQNetwork(
-            obsrv_dim=cfg_arch.obsrv_dim, mlp_dim=cfg_arch.mlp_dim, action_dim=cfg_arch.action_dim,
-            append_dim=cfg_arch.append_dim, latent_dim=cfg_arch.latent_dim, activation_type=cfg_arch.activation,
+            obsrv_dim=cfg_arch.obsrv_dim, mlp_dim=cfg_arch.mlp_dim, action_dim=cfg_arch.action_dim, activation_type=cfg_arch.activation,
             device=self.device, verbose=verbose
         )
 
@@ -921,7 +983,7 @@ class Critic(BaseBlock):
         g_x: torch.Tensor,
         l_x: torch.Tensor,
         binary_cost: torch.Tensor,
-        entropy_motives: torch.Tensor
+
     ) -> float:
         """
         Performs one gradient update step for the critic using Bellman backup targets.
@@ -947,7 +1009,7 @@ class Critic(BaseBlock):
         # Compute target Q-values using Bellman update
         target_q = get_bellman_update(
            mode=self.mode,
-           batch_size=self.batch_size,
+           batch_size=q1.shape[0],
            q1_nxt=q1_nxt,
            q2_nxt=q2_nxt,
            non_final_mask=non_final_mask,
@@ -957,12 +1019,9 @@ class Critic(BaseBlock):
            binary_cost=binary_cost,
            gamma=self.gamma)
 
-        if self.mode == 'performance':
-            target_q += self.gamma * entropy_motives
-
         # Compute MSE loss
-        loss_q1 = F.mse_loss(q1, target_q)
-        loss_q2 = F.mse_loss(q2, target_q)
+        loss_q1 = F.mse_loss(q1.view(-1), target_q)
+        loss_q2 = F.mse_loss(q2.view(-1), target_q)
         loss_q = loss_q1 + loss_q2
 
         self.optimizer.zero_grad()
@@ -999,14 +1058,13 @@ class Critic(BaseBlock):
         # 2. Load self.target if not eval mode.
         # 3. Return the path.
 
-        path = super().restore(step, model_folder, verbose)
-        
+        path = super().restore(step, model_folder, verbose)  
         if not self.eval and path is not None:
             self.target.load_state_dict(self.net.state_dict())
+            self.target.to(self.device)
             if verbose:
                 print(f"  => Restored target network from {path}")
         
-        return path
 
     ####################################################
     # VALUE SIGNATURE
@@ -1015,8 +1073,6 @@ class Critic(BaseBlock):
         self,
         obsrv: Union[np.ndarray, torch.Tensor],
         action: Union[np.ndarray, torch.Tensor],
-        append: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        latent: Optional[Union[np.ndarray, torch.Tensor]] = None,
     ) -> np.ndarray:
         """
         Returns the average Q-value (Q1+Q2)/2 for a given (obsrv, action) pair.
@@ -1037,7 +1093,7 @@ class Critic(BaseBlock):
         # 4. return average
 
         with torch.no_grad():
-            q1, q2 = self.net(obsrv, action, append=append, latent=latent)
+            q1, q2 = self.net(obsrv, action)
             average = (q1 + q2) / 2
 
         if isinstance(average, torch.Tensor):
@@ -1046,6 +1102,8 @@ class Critic(BaseBlock):
         return average
 
 ### Key method that allows porting actor and critic into training scripts ###
+
+
 def build_network(cfg, cfg_arch, device: torch.device,
                   verbose: bool = True) -> Tuple[Dict[str, Critic], Dict[str, Actor]]:
   critics: Dict[str, Critic] = {}
@@ -1056,3 +1114,10 @@ def build_network(cfg, cfg_arch, device: torch.device,
     critic = Critic(cfg=cfg_critic, cfg_arch=cfg_arch_critic, verbose=verbose, device=device)
     critics[cfg_critic.net_name] = critic
   assert "central" in critics, "Must have a central critic."
+
+  for idx in range(cfg.num_actors):
+    cfg_actor = getattr(cfg, f"actor_{idx}")
+    cfg_arch_actor = getattr(cfg_arch, f"actor_{idx}")
+    actor = Actor(cfg=cfg_actor, cfg_arch=cfg_arch_actor, verbose=verbose, device=device)
+    actors[cfg_actor.net_name] = actor
+  return critics, actors

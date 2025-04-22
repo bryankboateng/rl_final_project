@@ -273,3 +273,35 @@ class ReplayMemory(object):
     return len(self.memory)
 
 
+
+
+from typing import Optional, Tuple, Dict, Union
+import numpy as np
+import torch
+
+from simulators import BasePolicy
+
+
+class DummyPolicy(BasePolicy):
+  policy_type = "dummy"
+
+  def __init__(self, id: str, action_dim: int) -> None:
+    super().__init__(id)
+    self.action_dim = action_dim
+
+  @property
+  def is_stochastic(self) -> bool:
+    return False
+
+  def get_action(
+      self, obsrv: Union[np.ndarray, torch.Tensor], agents_action: Optional[Dict[str, np.ndarray]] = None,
+      num: Optional[int] = None, **kwargs
+  ) -> Tuple[np.ndarray, dict]:
+    if num is None:
+      action = np.zeros(self.action_dim)
+    else:
+      action = np.zeros(shape=(num, self.action_dim))
+
+    return action, dict(t_process=0, status=1)
+
+

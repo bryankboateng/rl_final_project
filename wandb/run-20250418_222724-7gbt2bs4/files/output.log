@@ -1,0 +1,160 @@
+== Environment information ==
+/Users/bboat/anaconda3/envs/gameplay/lib/python3.8/site-packages/gym/spaces/box.py:127: UserWarning: [33mWARN: Box bound precision lowered by casting to float32
+  logger.warn(f"Box bound precision lowered by casting to {self.dtype}")
+Spirit Pybullet initialized
+== Solver information ==
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=54, out_features=128, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=128, out_features=128, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=128, out_features=1, bias=True)
+    (act_1): Identity()
+  )
+)
+Q1: MLP(
+  (moduleList): ModuleList(
+    (0): Sequential(
+      (linear_1): Linear(in_features=54, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (1-2): 2 x Sequential(
+      (linear_1): Linear(in_features=128, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (3): Sequential(
+      (linear_1): Linear(in_features=128, out_features=1, bias=True)
+      (act_1): Identity()
+    )
+  )
+)
+Q2: MLP(
+  (moduleList): ModuleList(
+    (0): Sequential(
+      (linear_1): Linear(in_features=54, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (1-2): 2 x Sequential(
+      (linear_1): Linear(in_features=128, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (3): Sequential(
+      (linear_1): Linear(in_features=128, out_features=1, bias=True)
+      (act_1): Identity()
+    )
+  )
+)
+/Users/bboat/anaconda3/envs/gameplay/lib/python3.8/site-packages/gym/spaces/box.py:127: UserWarning: [33mWARN: Box bound precision lowered by casting to float32
+  logger.warn(f"Box bound precision lowered by casting to {self.dtype}")
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=36, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=12, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=36, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=12, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=36, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=6, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=36, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=6, bias=True)
+    (act_1): Identity()
+  )
+)
+#params in ctrl: 288280
+#params in dstb: 285196
+#params in critic: 80386
+We want to use: cpu, and Agent uses: cpu
+Critic is using cuda:  False
+== Learning starts ==
+Checks at sample step 0:
+Traceback (most recent call last):
+  File "train_isaacs.py", line 126, in <module>
+    main(args.config_file)
+  File "train_isaacs.py", line 108, in main
+    loss_record, eval_record, violation_record, episode_record, leaderboard = solver.learn(
+  File "/Users/bboat/Desktop/rl_final_project/base_training.py", line 125, in learn
+    self.eval(env, rollout_env, eval_callback, init_eval=True)
+  File "/Users/bboat/Desktop/rl_final_project/ISAACS_TS.py", line 484, in eval
+    eval_results: dict = eval_callback(
+  File "/Users/bboat/Desktop/rl_final_project/utils.py", line 60, in evaluate_zero_sum
+    _, results, length = rollout_env.simulate_trajectories(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/base_zs_env.py", line 331, in simulate_trajectories
+    state_hist, result, info = self.simulate_one_trajectory(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/base_zs_env.py", line 246, in simulate_one_trajectory
+    obsrv, reward, done, step_info = self.step(action)
+  File "/Users/bboat/Desktop/rl_final_project/simulators/base_zs_env.py", line 72, in step
+    state_nxt, ctrl_clip, dstb_clip = self.agent.integrate_forward(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/agent.py", line 120, in integrate_forward
+    return self.dyn.integrate_forward(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/go2_dynamics_pybullet.py", line 629, in integrate_forward
+    if self.abduction_min <= current_joint_pos[i] + increment <= self.abduction_max:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+Traceback (most recent call last):
+  File "train_isaacs.py", line 126, in <module>
+    main(args.config_file)
+  File "train_isaacs.py", line 108, in main
+    loss_record, eval_record, violation_record, episode_record, leaderboard = solver.learn(
+  File "/Users/bboat/Desktop/rl_final_project/base_training.py", line 125, in learn
+    self.eval(env, rollout_env, eval_callback, init_eval=True)
+  File "/Users/bboat/Desktop/rl_final_project/ISAACS_TS.py", line 484, in eval
+    eval_results: dict = eval_callback(
+  File "/Users/bboat/Desktop/rl_final_project/utils.py", line 60, in evaluate_zero_sum
+    _, results, length = rollout_env.simulate_trajectories(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/base_zs_env.py", line 331, in simulate_trajectories
+    state_hist, result, info = self.simulate_one_trajectory(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/base_zs_env.py", line 246, in simulate_one_trajectory
+    obsrv, reward, done, step_info = self.step(action)
+  File "/Users/bboat/Desktop/rl_final_project/simulators/base_zs_env.py", line 72, in step
+    state_nxt, ctrl_clip, dstb_clip = self.agent.integrate_forward(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/agent.py", line 120, in integrate_forward
+    return self.dyn.integrate_forward(
+  File "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/go2_dynamics_pybullet.py", line 629, in integrate_forward
+    if self.abduction_min <= current_joint_pos[i] + increment <= self.abduction_max:
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()

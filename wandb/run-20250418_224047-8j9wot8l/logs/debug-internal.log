@@ -1,0 +1,371 @@
+2025-04-18 22:40:47,537 INFO    StreamThr :29727 [internal.py:wandb_internal():86] W&B internal server running at pid: 29727, started at: 2025-04-18 22:40:47.532643
+2025-04-18 22:40:47,538 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status
+2025-04-18 22:40:47,541 INFO    WriterThread:29727 [datastore.py:open_for_write():87] open: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/run-8j9wot8l.wandb
+2025-04-18 22:40:47,542 DEBUG   SenderThread:29727 [sender.py:send():379] send: header
+2025-04-18 22:40:47,576 DEBUG   SenderThread:29727 [sender.py:send():379] send: run
+2025-04-18 22:40:47,825 INFO    SenderThread:29727 [dir_watcher.py:__init__():211] watching files in: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files
+2025-04-18 22:40:47,825 INFO    SenderThread:29727 [sender.py:_start_run_threads():1124] run started: 8j9wot8l with start time 1745030447.533769
+2025-04-18 22:40:47,843 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: check_version
+2025-04-18 22:40:47,843 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: check_version
+2025-04-18 22:40:47,902 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: run_start
+2025-04-18 22:40:47,903 DEBUG   HandlerThread:29727 [system_info.py:__init__():26] System info init
+2025-04-18 22:40:47,903 DEBUG   HandlerThread:29727 [system_info.py:__init__():41] System info init done
+2025-04-18 22:40:47,903 INFO    HandlerThread:29727 [system_monitor.py:start():194] Starting system monitor
+2025-04-18 22:40:47,903 INFO    SystemMonitor:29727 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2025-04-18 22:40:47,903 INFO    HandlerThread:29727 [system_monitor.py:probe():214] Collecting system info
+2025-04-18 22:40:47,905 DEBUG   HandlerThread:29727 [system_info.py:probe():150] Probing system
+2025-04-18 22:40:47,905 INFO    SystemMonitor:29727 [interfaces.py:start():190] Started cpu monitoring
+2025-04-18 22:40:47,906 INFO    SystemMonitor:29727 [interfaces.py:start():190] Started disk monitoring
+2025-04-18 22:40:47,906 INFO    SystemMonitor:29727 [interfaces.py:start():190] Started gpuapple monitoring
+2025-04-18 22:40:47,913 INFO    SystemMonitor:29727 [interfaces.py:start():190] Started memory monitoring
+2025-04-18 22:40:47,914 INFO    SystemMonitor:29727 [interfaces.py:start():190] Started network monitoring
+2025-04-18 22:40:47,921 DEBUG   HandlerThread:29727 [system_info.py:_probe_git():135] Probing git
+2025-04-18 22:40:47,971 DEBUG   HandlerThread:29727 [system_info.py:_probe_git():143] Probing git done
+2025-04-18 22:40:47,972 DEBUG   HandlerThread:29727 [system_info.py:probe():198] Probing system done
+2025-04-18 22:40:47,972 DEBUG   HandlerThread:29727 [system_monitor.py:probe():223] {'os': 'macOS-14.5-arm64-arm-64bit', 'python': '3.8.20', 'heartbeatAt': '2025-04-19T02:40:47.905910', 'startedAt': '2025-04-19T02:40:47.519795', 'docker': None, 'cuda': None, 'args': ('-cf', 'config/isaacs_go.yaml'), 'state': 'running', 'program': 'train_isaacs.py', 'codePathLocal': 'train_isaacs.py', 'codePath': 'train_isaacs.py', 'git': {'remote': 'https://github.com/bryankboateng/rl_final_project.git', 'commit': '3aacc591934987abca35fd3942a097a820f5555b'}, 'email': 'bryankboateng@gmail.com', 'root': '/Users/bboat/Desktop/rl_final_project', 'host': 'dynamic-oit-ip4-wifirestricted03-10-48-120-88.princeton.edu', 'username': 'bboat', 'executable': '/Users/bboat/anaconda3/envs/gameplay/bin/python3', 'cpu_count': 8, 'cpu_count_logical': 8, 'cpu_freq': {'current': 3204, 'min': 600, 'max': 3204}, 'cpu_freq_per_core': [{'current': 3204, 'min': 600, 'max': 3204}], 'disk': {'/': {'total': 228.27386474609375, 'used': 200.5925407409668}}, 'gpuapple': {'type': 'arm', 'vendor': 'Apple'}, 'memory': {'total': 8.0}}
+2025-04-18 22:40:47,972 INFO    HandlerThread:29727 [system_monitor.py:probe():224] Finished collecting system info
+2025-04-18 22:40:47,972 INFO    HandlerThread:29727 [system_monitor.py:probe():227] Publishing system info
+2025-04-18 22:40:47,972 DEBUG   HandlerThread:29727 [system_info.py:_save_conda():207] Saving list of conda packages installed into the current environment
+2025-04-18 22:40:47,975 ERROR   HandlerThread:29727 [system_info.py:_save_conda():221] Error saving conda packages: [Errno 2] No such file or directory: 'conda'
+Traceback (most recent call last):
+  File "/Users/bboat/anaconda3/envs/gameplay/lib/python3.8/site-packages/wandb/sdk/internal/system/system_info.py", line 214, in _save_conda
+    subprocess.call(
+  File "/Users/bboat/anaconda3/envs/gameplay/lib/python3.8/subprocess.py", line 340, in call
+    with Popen(*popenargs, **kwargs) as p:
+  File "/Users/bboat/anaconda3/envs/gameplay/lib/python3.8/subprocess.py", line 858, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/Users/bboat/anaconda3/envs/gameplay/lib/python3.8/subprocess.py", line 1720, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'conda'
+2025-04-18 22:40:47,977 DEBUG   HandlerThread:29727 [system_info.py:_save_conda():222] Saving conda packages done
+2025-04-18 22:40:47,978 INFO    HandlerThread:29727 [system_monitor.py:probe():229] Finished publishing system info
+2025-04-18 22:40:47,980 DEBUG   SenderThread:29727 [sender.py:send():379] send: files
+2025-04-18 22:40:47,980 INFO    SenderThread:29727 [sender.py:_save_file():1390] saving file wandb-metadata.json with policy now
+2025-04-18 22:40:48,156 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: python_packages
+2025-04-18 22:40:48,156 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: python_packages
+2025-04-18 22:40:48,156 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:40:48,156 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:40:48,157 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:40:48,249 DEBUG   SenderThread:29727 [sender.py:send():379] send: telemetry
+2025-04-18 22:40:48,249 DEBUG   SenderThread:29727 [sender.py:send():379] send: config
+2025-04-18 22:40:48,270 INFO    wandb-upload_0:29727 [upload_job.py:push():131] Uploaded file /var/folders/_s/z5bq28ks5jjg1h3lngn_c7y00000gn/T/tmp2290k_o3wandb/j7j99q4y-wandb-metadata.json
+2025-04-18 22:40:48,831 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_created():271] file/dir created: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:40:48,831 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_created():271] file/dir created: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/wandb-metadata.json
+2025-04-18 22:40:48,832 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_created():271] file/dir created: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/conda-environment.yaml
+2025-04-18 22:40:48,832 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_created():271] file/dir created: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/requirements.txt
+2025-04-18 22:40:50,838 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:40:51,843 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:40:52,640 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:40:52,849 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:40:53,510 DEBUG   SenderThread:29727 [sender.py:send():379] send: telemetry
+2025-04-18 22:40:53,511 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: partial_history
+2025-04-18 22:40:53,511 DEBUG   SenderThread:29727 [sender.py:send():379] send: history
+2025-04-18 22:40:53,512 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: summary_record
+2025-04-18 22:40:53,512 INFO    SenderThread:29727 [sender.py:_save_file():1390] saving file wandb-summary.json with policy end
+2025-04-18 22:40:53,850 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:40:53,851 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_created():271] file/dir created: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/wandb-summary.json
+2025-04-18 22:40:54,855 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:40:55,860 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:40:56,861 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:40:57,641 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:40:58,867 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:00,875 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:02,641 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:02,883 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:03,160 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:41:03,160 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:41:03,161 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:41:04,887 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:06,891 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:07,678 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:08,899 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:10,907 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:12,679 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:12,913 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:14,922 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:16,928 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:17,693 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:17,930 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/config.yaml
+2025-04-18 22:41:18,162 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:41:18,163 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:41:18,163 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:41:18,930 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:20,941 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:22,775 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:22,945 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:24,954 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:26,965 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:27,775 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:28,973 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:30,979 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:32,818 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:32,982 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:33,167 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:41:33,167 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:41:33,168 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:41:34,992 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:37,001 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:37,821 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:39,003 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:41,008 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:42,822 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:43,017 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:45,023 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:47,027 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:47,822 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:47,914 DEBUG   SystemMonitor:29727 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2025-04-18 22:41:47,916 DEBUG   SenderThread:29727 [sender.py:send():379] send: telemetry
+2025-04-18 22:41:47,916 DEBUG   SenderThread:29727 [sender.py:send():379] send: stats
+2025-04-18 22:41:48,186 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:41:48,186 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:41:48,187 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:41:49,042 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:51,047 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:52,823 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:53,053 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:55,064 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:57,069 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:41:57,824 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:41:59,076 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:01,082 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:02,828 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:03,089 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:03,181 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:42:03,182 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:42:03,189 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:42:05,093 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:07,101 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:07,886 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:09,109 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:11,116 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:12,887 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:13,122 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:15,125 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:17,131 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:17,892 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:17,992 DEBUG   SenderThread:29727 [sender.py:send():379] send: stats
+2025-04-18 22:42:18,137 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/config.yaml
+2025-04-18 22:42:18,199 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:42:18,199 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:42:18,218 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:42:19,138 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:21,146 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:23,014 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:23,168 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:25,173 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:27,179 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:28,037 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:29,189 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:31,193 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:33,038 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:33,198 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:42:33,199 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:42:33,203 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:33,205 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:42:35,212 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:37,220 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:38,038 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:39,228 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:41,231 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:43,038 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:43,234 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:45,240 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:47,244 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:47,924 DEBUG   SenderThread:29727 [sender.py:send():379] send: stats
+2025-04-18 22:42:48,064 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:48,201 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:42:48,201 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:42:48,208 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:42:49,252 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:51,253 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:53,065 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:53,263 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:55,270 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:57,279 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:42:58,065 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:42:59,287 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:01,294 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:03,067 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:03,222 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:43:03,223 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:43:03,223 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:43:03,299 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:05,307 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:07,318 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:08,067 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:09,325 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:11,333 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:13,068 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:13,344 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:15,350 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:17,356 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:17,929 DEBUG   SenderThread:29727 [sender.py:send():379] send: stats
+2025-04-18 22:43:18,069 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:18,236 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:43:18,237 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:43:18,237 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:43:19,364 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:21,374 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:23,070 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:23,385 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:25,392 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:27,399 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:28,071 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:29,407 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:31,418 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:33,072 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:33,225 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:43:33,235 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: stop_status
+2025-04-18 22:43:33,235 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: stop_status
+2025-04-18 22:43:33,425 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:35,431 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:37,440 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:38,072 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:39,443 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:41,456 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:43,072 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:43,462 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:45,467 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:47,086 DEBUG   SenderThread:29727 [sender.py:send():379] send: exit
+2025-04-18 22:43:47,087 INFO    SenderThread:29727 [sender.py:send_exit():586] handling exit code: 1
+2025-04-18 22:43:47,087 INFO    SenderThread:29727 [sender.py:send_exit():588] handling runtime: 179
+2025-04-18 22:43:47,088 INFO    SenderThread:29727 [sender.py:_save_file():1390] saving file wandb-summary.json with policy end
+2025-04-18 22:43:47,088 INFO    SenderThread:29727 [sender.py:send_exit():594] send defer
+2025-04-18 22:43:47,088 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:47,088 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 0
+2025-04-18 22:43:47,088 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:47,088 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 0
+2025-04-18 22:43:47,088 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 1
+2025-04-18 22:43:47,088 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:47,088 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 1
+2025-04-18 22:43:47,089 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:47,089 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 1
+2025-04-18 22:43:47,089 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 2
+2025-04-18 22:43:47,089 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:47,089 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 2
+2025-04-18 22:43:47,089 INFO    HandlerThread:29727 [system_monitor.py:finish():203] Stopping system monitor
+2025-04-18 22:43:47,089 DEBUG   SystemMonitor:29727 [system_monitor.py:_start():179] Finished system metrics aggregation loop
+2025-04-18 22:43:47,089 INFO    HandlerThread:29727 [interfaces.py:finish():202] Joined cpu monitor
+2025-04-18 22:43:47,089 DEBUG   SystemMonitor:29727 [system_monitor.py:_start():183] Publishing last batch of metrics
+2025-04-18 22:43:47,090 INFO    HandlerThread:29727 [interfaces.py:finish():202] Joined disk monitor
+2025-04-18 22:43:47,091 INFO    HandlerThread:29727 [interfaces.py:finish():202] Joined gpuapple monitor
+2025-04-18 22:43:47,091 INFO    HandlerThread:29727 [interfaces.py:finish():202] Joined memory monitor
+2025-04-18 22:43:47,091 INFO    HandlerThread:29727 [interfaces.py:finish():202] Joined network monitor
+2025-04-18 22:43:47,091 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:47,091 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 2
+2025-04-18 22:43:47,091 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 3
+2025-04-18 22:43:47,091 DEBUG   SenderThread:29727 [sender.py:send():379] send: stats
+2025-04-18 22:43:47,092 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:47,092 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 3
+2025-04-18 22:43:47,092 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:47,092 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 3
+2025-04-18 22:43:47,092 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 4
+2025-04-18 22:43:47,092 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:47,092 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 4
+2025-04-18 22:43:47,092 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:47,092 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 4
+2025-04-18 22:43:47,093 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 5
+2025-04-18 22:43:47,093 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:47,093 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 5
+2025-04-18 22:43:47,093 DEBUG   SenderThread:29727 [sender.py:send():379] send: summary
+2025-04-18 22:43:47,093 INFO    SenderThread:29727 [sender.py:_save_file():1390] saving file wandb-summary.json with policy end
+2025-04-18 22:43:47,094 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:47,094 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 5
+2025-04-18 22:43:47,094 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 6
+2025-04-18 22:43:47,094 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:47,094 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 6
+2025-04-18 22:43:47,094 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:47,094 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 6
+2025-04-18 22:43:47,094 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 7
+2025-04-18 22:43:47,094 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: status_report
+2025-04-18 22:43:47,094 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:47,094 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 7
+2025-04-18 22:43:47,094 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:47,095 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 7
+2025-04-18 22:43:47,484 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/wandb-summary.json
+2025-04-18 22:43:47,485 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:48,092 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: poll_exit
+2025-04-18 22:43:48,491 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:49,498 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:49,736 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 8
+2025-04-18 22:43:49,736 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: poll_exit
+2025-04-18 22:43:49,736 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:49,737 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 8
+2025-04-18 22:43:49,738 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:49,738 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 8
+2025-04-18 22:43:49,738 INFO    SenderThread:29727 [job_builder.py:build():318] Attempting to build job artifact
+2025-04-18 22:43:49,742 INFO    SenderThread:29727 [job_builder.py:_get_source_type():455] is repo sourced job
+2025-04-18 22:43:49,804 INFO    SenderThread:29727 [job_builder.py:build():431] adding wandb-job metadata file
+2025-04-18 22:43:49,809 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 9
+2025-04-18 22:43:49,809 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:49,809 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 9
+2025-04-18 22:43:49,809 DEBUG   SenderThread:29727 [sender.py:send():379] send: artifact
+2025-04-18 22:43:50,104 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: poll_exit
+2025-04-18 22:43:50,124 INFO    SenderThread:29727 [sender.py:send_artifact():1468] sent artifact job-https___github.com_bryankboateng_rl_final_project.git_train_isaacs.py - {'id': 'QXJ0aWZhY3Q6MTY2NjczNjUxNA==', 'state': 'COMMITTED', 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjYxNTc2MTg5NQ==', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6MTY2NjczNjUxNA==', 'versionIndex': 1}}}
+2025-04-18 22:43:50,125 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:50,125 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 9
+2025-04-18 22:43:50,125 INFO    SenderThread:29727 [dir_watcher.py:finish():358] shutting down directory watcher
+2025-04-18 22:43:50,505 INFO    Thread-12 :29727 [dir_watcher.py:_on_file_modified():288] file/dir modified: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:50,506 INFO    SenderThread:29727 [dir_watcher.py:finish():388] scan: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files
+2025-04-18 22:43:50,507 INFO    SenderThread:29727 [dir_watcher.py:finish():402] scan save: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/requirements.txt requirements.txt
+2025-04-18 22:43:50,507 INFO    SenderThread:29727 [dir_watcher.py:finish():402] scan save: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log output.log
+2025-04-18 22:43:50,511 INFO    SenderThread:29727 [dir_watcher.py:finish():402] scan save: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/config.yaml config.yaml
+2025-04-18 22:43:50,512 INFO    SenderThread:29727 [dir_watcher.py:finish():402] scan save: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/wandb-summary.json wandb-summary.json
+2025-04-18 22:43:50,515 INFO    SenderThread:29727 [dir_watcher.py:finish():402] scan save: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/conda-environment.yaml conda-environment.yaml
+2025-04-18 22:43:50,518 INFO    SenderThread:29727 [dir_watcher.py:finish():402] scan save: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/wandb-metadata.json wandb-metadata.json
+2025-04-18 22:43:50,518 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 10
+2025-04-18 22:43:50,518 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: poll_exit
+2025-04-18 22:43:50,521 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:50,521 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 10
+2025-04-18 22:43:50,522 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:50,522 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 10
+2025-04-18 22:43:50,523 INFO    SenderThread:29727 [file_pusher.py:finish():172] shutting down file pusher
+2025-04-18 22:43:50,727 INFO    wandb-upload_0:29727 [upload_job.py:push():131] Uploaded file /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/requirements.txt
+2025-04-18 22:43:50,801 INFO    wandb-upload_1:29727 [upload_job.py:push():131] Uploaded file /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/output.log
+2025-04-18 22:43:50,805 INFO    wandb-upload_2:29727 [upload_job.py:push():131] Uploaded file /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/config.yaml
+2025-04-18 22:43:50,810 INFO    wandb-upload_3:29727 [upload_job.py:push():131] Uploaded file /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/files/wandb-summary.json
+2025-04-18 22:43:51,012 INFO    Thread-11 :29727 [sender.py:transition_state():614] send defer: 11
+2025-04-18 22:43:51,013 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:51,014 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 11
+2025-04-18 22:43:51,014 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:51,015 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 11
+2025-04-18 22:43:51,015 INFO    SenderThread:29727 [file_pusher.py:join():178] waiting for file pusher
+2025-04-18 22:43:51,017 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 12
+2025-04-18 22:43:51,017 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:51,017 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 12
+2025-04-18 22:43:51,017 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:51,017 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 12
+2025-04-18 22:43:51,018 INFO    SenderThread:29727 [file_stream.py:finish():614] file stream finish called
+2025-04-18 22:43:51,110 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: poll_exit
+2025-04-18 22:43:51,219 INFO    SenderThread:29727 [file_stream.py:finish():618] file stream finish is done
+2025-04-18 22:43:51,219 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 13
+2025-04-18 22:43:51,220 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: poll_exit
+2025-04-18 22:43:51,220 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:51,221 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 13
+2025-04-18 22:43:51,221 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:51,221 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 13
+2025-04-18 22:43:51,222 INFO    SenderThread:29727 [sender.py:transition_state():614] send defer: 14
+2025-04-18 22:43:51,222 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: defer
+2025-04-18 22:43:51,223 INFO    HandlerThread:29727 [handler.py:handle_request_defer():172] handle defer: 14
+2025-04-18 22:43:51,223 DEBUG   SenderThread:29727 [sender.py:send():379] send: final
+2025-04-18 22:43:51,223 DEBUG   SenderThread:29727 [sender.py:send():379] send: footer
+2025-04-18 22:43:51,223 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: defer
+2025-04-18 22:43:51,223 INFO    SenderThread:29727 [sender.py:send_request_defer():610] handle sender defer: 14
+2025-04-18 22:43:51,224 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: poll_exit
+2025-04-18 22:43:51,224 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: poll_exit
+2025-04-18 22:43:51,225 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: poll_exit
+2025-04-18 22:43:51,225 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: server_info
+2025-04-18 22:43:51,226 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: poll_exit
+2025-04-18 22:43:51,226 DEBUG   SenderThread:29727 [sender.py:send_request():406] send_request: server_info
+2025-04-18 22:43:51,226 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: get_summary
+2025-04-18 22:43:51,229 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: sampled_history
+2025-04-18 22:43:51,231 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: internal_messages
+2025-04-18 22:43:51,280 INFO    MainThread:29727 [wandb_run.py:_footer_history_summary_info():3936] rendering history
+2025-04-18 22:43:51,281 INFO    MainThread:29727 [wandb_run.py:_footer_history_summary_info():3968] rendering summary
+2025-04-18 22:43:51,282 INFO    MainThread:29727 [wandb_run.py:_footer_sync_info():3895] logging synced files
+2025-04-18 22:43:51,283 DEBUG   HandlerThread:29727 [handler.py:handle_request():146] handle_request: shutdown
+2025-04-18 22:43:51,283 INFO    HandlerThread:29727 [handler.py:finish():866] shutting down handler
+2025-04-18 22:43:52,231 INFO    WriterThread:29727 [datastore.py:close():296] close: /Users/bboat/Desktop/rl_final_project/wandb/run-20250418_224047-8j9wot8l/run-8j9wot8l.wandb
+2025-04-18 22:43:52,285 INFO    SenderThread:29727 [sender.py:finish():1546] shutting down sender
+2025-04-18 22:43:52,285 INFO    SenderThread:29727 [file_pusher.py:finish():172] shutting down file pusher
+2025-04-18 22:43:52,285 INFO    SenderThread:29727 [file_pusher.py:join():178] waiting for file pusher
