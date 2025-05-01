@@ -58,6 +58,9 @@ class Agent:
     elif cfg.dyn == "Go2Pybullet":
       from .dynamics.go2_dynamics_pybullet import Go2DynamicsPybullet
       self.dyn = Go2DynamicsPybullet(cfg, action_space)
+    elif cfg.dyn == "HumanoidPybullet":
+      from .dynamics.humanoid_dyn_pybullet import HumanoidDynamicsPybullet
+      self.dyn = HumanoidDynamicsPybullet(cfg, action_space)
     else:
       raise ValueError("Dynamics type not supported!")
 

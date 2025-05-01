@@ -46,3 +46,4 @@ from .spirit_rl.spirit_pybullet_zs import SpiritPybulletZeroSumEnv
 from .go2_pybullet.go2_pybullet_single import Go2PybulletSingleEnv
 from .go2_pybullet.go2_pybullet_zs import Go2PybulletZeroSumEnv
 from .point_mass.pm_dynamics_zs import PointMassZeroSumEnv
+from .humanoid_rl.humanoid_pybullet_zs import HumanoidPybulletZeroSumEnv

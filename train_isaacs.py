@@ -53,6 +53,10 @@ def main(config_file):
     from simulators import PointMassZeroSumEnv
     env_class = PointMassZeroSumEnv
     cfg.cost = None
+  elif cfg.agent.dyn == "HumanoidPybullet":
+    from simulators import HumanoidPybulletZeroSumEnv
+    env_class = HumanoidPybulletZeroSumEnv
+    cfg.cost = None
   elif cfg.agent.dyn == "BicycleDstb5D":
     from simulators import RaceCarDstb5DEnv
     from simulators.race_car.functions import visualize_dstbEnv as visualize
