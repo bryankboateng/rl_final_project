@@ -1,0 +1,85 @@
+STDOUT will be forked to train_result/humanoid/log.txt
+wandb: Currently logged in as: bryankboateng (bryankboateng-princeton-university). Use `wandb login --relogin` to force relogin
+wandb: Currently logged in as: bryankboateng (bryankboateng-princeton-university). Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.19.10 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: wandb version 0.19.10 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.6
+wandb: Tracking run with wandb version 0.16.6
+wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250430_204104-upli2ic3
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250430_204104-upli2ic3
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run humanoid_isaacs
+wandb: Syncing run humanoid_isaacs
+wandb:  View project at https://wandb.ai/bryankboateng-princeton-university/RL_FINAL_PROJECT
+wandb:  View project at https://wandb.ai/bryankboateng-princeton-university/RL_FINAL_PROJECT
+wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/RL_FINAL_PROJECT/runs/upli2ic3
+wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/RL_FINAL_PROJECT/runs/upli2ic3
+
+== Environment information ==
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "train_isaacs.py", line 129, in <module>
+    main(args.config_file)
+  File "train_isaacs.py", line 129, in <module>
+    main(args.config_file)
+  File "train_isaacs.py", line 71, in main
+    env = env_class(cfg.environment, cfg.agent, cfg.cost)
+  File "train_isaacs.py", line 71, in main
+    env = env_class(cfg.environment, cfg.agent, cfg.cost)
+  File "/home/bb/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
+    super().__init__(cfg_env, cfg_agent)
+  File "/home/bb/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
+    super().__init__(cfg_env, cfg_agent)
+  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
+    self.agent = Agent(cfg_agent, tmp_action_space)
+  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
+    self.agent = Agent(cfg_agent, tmp_action_space)
+  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 62, in __init__
+    from .dynamics.humanoid_dyn_pybullet import HumanoidDynamicsPybullet
+  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 62, in __init__
+    from .dynamics.humanoid_dyn_pybullet import HumanoidDynamicsPybullet
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 5, in <module>
+    from .resources.humanoid import Humanoid
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 5, in <module>
+    from .resources.humanoid import Humanoid
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid.py", line 34, in <module>
+    from dynamics.base_pybullet_dynamics import BasePybulletDynamics  # You already have this
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid.py", line 34, in <module>
+    from dynamics.base_pybullet_dynamics import BasePybulletDynamics  # You already have this
+ModuleNotFoundError: No module named 'dynamics'
+ModuleNotFoundError: No module named 'dynamics'
+Traceback (most recent call last):
+  File "train_isaacs.py", line 129, in <module>
+    main(args.config_file)
+  File "train_isaacs.py", line 71, in main
+    env = env_class(cfg.environment, cfg.agent, cfg.cost)
+  File "/home/bb/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
+    super().__init__(cfg_env, cfg_agent)
+  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
+    self.agent = Agent(cfg_agent, tmp_action_space)
+  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 62, in __init__
+    from .dynamics.humanoid_dyn_pybullet import HumanoidDynamicsPybullet
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 5, in <module>
+    from .resources.humanoid import Humanoid
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid.py", line 34, in <module>
+    from dynamics.base_pybullet_dynamics import BasePybulletDynamics  # You already have this
+ModuleNotFoundError: No module named 'dynamics'
+Traceback (most recent call last):
+  File "train_isaacs.py", line 129, in <module>
+    main(args.config_file)
+  File "train_isaacs.py", line 71, in main
+    env = env_class(cfg.environment, cfg.agent, cfg.cost)
+  File "/home/bb/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
+    super().__init__(cfg_env, cfg_agent)
+  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
+    self.agent = Agent(cfg_agent, tmp_action_space)
+  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 62, in __init__
+    from .dynamics.humanoid_dyn_pybullet import HumanoidDynamicsPybullet
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 5, in <module>
+    from .resources.humanoid import Humanoid
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid.py", line 34, in <module>
+    from dynamics.base_pybullet_dynamics import BasePybulletDynamics  # You already have this
+ModuleNotFoundError: No module named 'dynamics'

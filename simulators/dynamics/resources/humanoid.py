@@ -31,9 +31,13 @@
 
 import numpy as np
 import pybullet as p
-from dynamics.base_pybullet_dynamics import BasePybulletDynamics  # You already have this
+import os
+import math
+from .utils import *
+from scipy.spatial.transform import Rotation
 
-class Humanoid(BasePybulletDynamics):
+
+class Humanoid:
     def __init__(self, client, height=4.0, orientation=None, env_type=None, payload_max=0, **kwargs):
         super().__init__(client, height, orientation, env_type, payload_max, **kwargs)
 
@@ -149,7 +153,7 @@ class Humanoid(BasePybulletDynamics):
     def get_obs(self):
         pos, ang = p.getBasePositionAndOrientation(self.id, physicsClientId=self.client)
         lin_vel, ang_vel = p.getBaseVelocity(self.id, physicsClientId=self.client)
-        rotmat = np.array(p.getMatrixFromQuaternion(ang)).reshape(3, 3)
+        rotmat = Rotation.from_quat(ang).as_matrix()
 
         robot_body_linear_vel = np.dot(rotmat.T, lin_vel)
         robot_body_angular_vel = np.dot(rotmat.T, ang_vel)

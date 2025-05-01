@@ -5,14 +5,14 @@ environment:
 
 agent:
   agent_id: ego
-  dyn: HumanoidPybullet
+  dyn: Go2Pybullet
   footprint: none
   verbose: false
   gui: false
   gui_imaginary: false
   dt: 0.02
-  apply_force: false
-  replace_adv_with_dr: false
+  apply_force: false # warning, currently this will also affect adversarial force
+  replace_adv_with_dr: false # if true, this will replace the adversarial force with dr force
   force: 50
   force_scale: 1.0
   force_reset_time: 50
@@ -28,16 +28,18 @@ agent:
   envtype: normal
   action_range: 
     ctrl: &ctrl_range
-      - [-0.5, 0.5]  # right_hip
-      - [-0.5, 0.5]  # right_knee
-      - [-0.5, 0.5]  # right_ankle
-      - [-0.5, 0.5]  # left_hip
-      - [-0.5, 0.5]  # left_knee
-      - [-0.5, 0.5]  # left_ankle
-      - [-0.5, 0.5]  # right_shoulder
-      - [-0.5, 0.5]  # right_elbow
-      - [-0.5, 0.5]  # left_shoulder
-      - [-0.5, 0.5]  # left_elbow
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
+      - [-0.5, 0.5]
     dstb: &dstb_range
       - [-1., 1.]
       - [-1., 1.]
@@ -47,42 +49,35 @@ agent:
       - [-0.05, 0.05]
   action_type: center_sampling
   action_center:
-    - 0.0   # right_hip
-    - -0.2  # right_knee
-    - 0.0   # right_ankle
-    - 0.0   # left_hip
-    - -0.2  # left_knee
-    - 0.0   # left_ankle
-    - 0.0   # right_shoulder
-    - 1.5   # right_elbow
-    - 0.0   # left_shoulder
-    - 1.5   # left_elbow
+    - 0.2 
+    - 0.6
+    - -1.5
+    - 0.2 
+    - 0.6
+    - -1.5
+    - -0.2 
+    - 0.6
+    - -1.5
+    - -0.2 
+    - 0.6
+    - -1.5
   target_margin:
-    - pelvis_height_target
-    - upright_roll
-    - upright_pitch
-    - right_knee_neutral
-    - left_knee_neutral
-    - right_elbow_neutral
-    - left_elbow_neutral
+    - corner_height
+    - toe_height
+    - body_ang_x
+    - body_ang_y
+    - body_ang_z
+    - x_dot
+    - y_dot
+    - z_dot
   safety_margin:
-    - pelvis_height
-    - abs_roll
-    - abs_pitch
-    - right_knee_min
-    - right_knee_max
-    - left_knee_min
-    - left_knee_max
-    - right_elbow_min
-    - right_elbow_max
-    - left_elbow_min
-    - left_elbow_max
-  obs_dim: 28  # 3 lin_vel + 3 ang_vel + 10 joint_pos + 10 joint_vel + 2 foot contact
+    - corner_height
+    - elbow_height
+  obs_dim: 36
   obsrv_list: &obsrv_list
     ctrl: null
     dstb: null
   reset_criterion: failure
-
 
 solver:
   device: cpu
@@ -109,12 +104,12 @@ solver:
   # == logging ==
   use_wandb: true
   project_name: RL_FINAL_PROJECT
-  name: humanoid_isaacs
+  name: go2_isaacs
   max_model: 20
   save_top_k:
     ctrl: 10
     dstb: 10
-  out_folder: train_result/humanoid
+  out_folder: train_result/go
   eval:   
     b4_learn: true
     metric: reach-avoid
