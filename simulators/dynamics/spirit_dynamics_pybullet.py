@@ -517,6 +517,7 @@ class SpiritDynamicsPybullet(BasePybulletDynamics):
         """
 
     # pop the oldest obs, add the current obs before applying action
+    
     if len(self.obs_sequence) > 0:
       self.obs_sequence.pop()
       self.obs_sequence.insert(0, list(self.robot.get_obs()))

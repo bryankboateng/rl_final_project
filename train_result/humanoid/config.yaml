@@ -107,7 +107,7 @@ solver:
   memory_capacity: 1_000_000
   softmax_rationality: 3.0
   # == logging ==
-  use_wandb: true
+  use_wandb: false
   project_name: RL_FINAL_PROJECT
   name: humanoid_isaacs
   max_model: 20
@@ -122,7 +122,7 @@ solver:
     num_trajectories: 20
     timeout: 100
     end_criterion: reach-avoid
-  obs_dim: 36
+  obs_dim: 28
   obsrv_list:  *obsrv_list
   rollout_end_criterion: reach-avoid
   # == hyperparameters of actors and critics ==
@@ -193,7 +193,7 @@ arch:
     append_dim: 0
     latent_dim: 0
     obsrv_dim: 36
-    action_dim: 12
+    action_dim: 10
     action_range: *ctrl_range
     pretrained_path:
   actor_1:
@@ -204,7 +204,7 @@ arch:
     activation: Sin
     append_dim: 0
     latent_dim: 0
-    obsrv_dim: 36
+    obsrv_dim: 28
     action_dim: 6
     action_range: *dstb_range
     pretrained_path:
@@ -216,8 +216,8 @@ arch:
     activation: Sin
     append_dim: 0
     latent_dim: 0
-    obsrv_dim: 36
-    action_dim: 18
+    obsrv_dim: 28
+    action_dim: 16
     pretrained_path:
 
 eval:

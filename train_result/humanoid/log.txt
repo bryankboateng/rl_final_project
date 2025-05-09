@@ -1,85 +1,45 @@
 STDOUT will be forked to train_result/humanoid/log.txt
-wandb: Currently logged in as: bryankboateng (bryankboateng-princeton-university). Use `wandb login --relogin` to force relogin
-wandb: Currently logged in as: bryankboateng (bryankboateng-princeton-university). Use `wandb login --relogin` to force relogin
-wandb: wandb version 0.19.10 is available!  To upgrade, please run:
-wandb:  $ pip install wandb --upgrade
-wandb: wandb version 0.19.10 is available!  To upgrade, please run:
-wandb:  $ pip install wandb --upgrade
-wandb: Tracking run with wandb version 0.16.6
-wandb: Tracking run with wandb version 0.16.6
-wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250430_204104-upli2ic3
-wandb: Run `wandb offline` to turn off syncing.
-wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250430_204104-upli2ic3
-wandb: Run `wandb offline` to turn off syncing.
-wandb: Syncing run humanoid_isaacs
-wandb: Syncing run humanoid_isaacs
-wandb:  View project at https://wandb.ai/bryankboateng-princeton-university/RL_FINAL_PROJECT
-wandb:  View project at https://wandb.ai/bryankboateng-princeton-university/RL_FINAL_PROJECT
-wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/RL_FINAL_PROJECT/runs/upli2ic3
-wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/RL_FINAL_PROJECT/runs/upli2ic3
 
 == Environment information ==
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.7, 'abs_pitch': 0.7, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.32144620375014565, 'abs_pitch': 0.6561670273284999, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.6652849606215332, 'abs_pitch': 0.5121113258251115, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.562171005453947, 'abs_pitch': 0.6070037974111065, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.42296952730205867, 'abs_pitch': 0.32262670822256195, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.4454681370017645, 'abs_pitch': 0.40806853369281176, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.3168763834154541, 'abs_pitch': 0.4295936810023065, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.43918894610816667, 'abs_pitch': 0.34832885561340704, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.5121464792278623, 'abs_pitch': 0.631237431619295, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
+Safety: {'pelvis_height': 1.2000000000000002, 'abs_roll': 0.4266895074370578, 'abs_pitch': 0.6146812888660096, 'right_hip_min': -0.05, 'right_hip_max': -1.05, 'right_knee_min': 3.0900000000000003, 'right_knee_max': -0.05, 'right_ankle_min': -0.05, 'right_ankle_max': -1.05, 'left_hip_min': -0.05, 'left_hip_max': -1.05, 'left_knee_min': 3.0900000000000003, 'left_knee_max': -0.05, 'left_ankle_min': -0.05, 'left_ankle_max': -1.05, 'right_shoulder_min': -0.05, 'right_shoulder_max': -1.05, 'right_elbow_min': -0.05, 'right_elbow_max': 3.0900000000000003, 'left_shoulder_min': -0.05, 'left_shoulder_max': -1.05, 'left_elbow_min': -0.05, 'left_elbow_max': 3.0900000000000003}
 Traceback (most recent call last):
 Traceback (most recent call last):
-  File "train_isaacs.py", line 129, in <module>
-    main(args.config_file)
-  File "train_isaacs.py", line 129, in <module>
-    main(args.config_file)
+  File "train_isaacs.py", line 130, in <module>
+  File "train_isaacs.py", line 130, in <module>
+        main(args.config_file)main(args.config_file)
+
   File "train_isaacs.py", line 71, in main
-    env = env_class(cfg.environment, cfg.agent, cfg.cost)
   File "train_isaacs.py", line 71, in main
-    env = env_class(cfg.environment, cfg.agent, cfg.cost)
-  File "/home/bb/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
-    super().__init__(cfg_env, cfg_agent)
-  File "/home/bb/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
-    super().__init__(cfg_env, cfg_agent)
-  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
-    self.agent = Agent(cfg_agent, tmp_action_space)
-  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
-    self.agent = Agent(cfg_agent, tmp_action_space)
-  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 62, in __init__
-    from .dynamics.humanoid_dyn_pybullet import HumanoidDynamicsPybullet
-  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 62, in __init__
-    from .dynamics.humanoid_dyn_pybullet import HumanoidDynamicsPybullet
-  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 5, in <module>
-    from .resources.humanoid import Humanoid
-  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 5, in <module>
-    from .resources.humanoid import Humanoid
-  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid.py", line 34, in <module>
-    from dynamics.base_pybullet_dynamics import BasePybulletDynamics  # You already have this
-  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid.py", line 34, in <module>
-    from dynamics.base_pybullet_dynamics import BasePybulletDynamics  # You already have this
-ModuleNotFoundError: No module named 'dynamics'
-ModuleNotFoundError: No module named 'dynamics'
-Traceback (most recent call last):
-  File "train_isaacs.py", line 129, in <module>
-    main(args.config_file)
-  File "train_isaacs.py", line 71, in main
-    env = env_class(cfg.environment, cfg.agent, cfg.cost)
-  File "/home/bb/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
-    super().__init__(cfg_env, cfg_agent)
-  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
-    self.agent = Agent(cfg_agent, tmp_action_space)
-  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 62, in __init__
-    from .dynamics.humanoid_dyn_pybullet import HumanoidDynamicsPybullet
-  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 5, in <module>
-    from .resources.humanoid import Humanoid
-  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid.py", line 34, in <module>
-    from dynamics.base_pybullet_dynamics import BasePybulletDynamics  # You already have this
-ModuleNotFoundError: No module named 'dynamics'
-Traceback (most recent call last):
-  File "train_isaacs.py", line 129, in <module>
-    main(args.config_file)
-  File "train_isaacs.py", line 71, in main
-    env = env_class(cfg.environment, cfg.agent, cfg.cost)
-  File "/home/bb/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
-    super().__init__(cfg_env, cfg_agent)
-  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
-    self.agent = Agent(cfg_agent, tmp_action_space)
-  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 62, in __init__
-    from .dynamics.humanoid_dyn_pybullet import HumanoidDynamicsPybullet
-  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 5, in <module>
-    from .resources.humanoid import Humanoid
-  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid.py", line 34, in <module>
-    from dynamics.base_pybullet_dynamics import BasePybulletDynamics  # You already have this
-ModuleNotFoundError: No module named 'dynamics'
+        env = env_class(cfg.environment, cfg.agent, cfg.cost)env = env_class(cfg.environment, cfg.agent, cfg.cost)
+
+  File "/Users/bboat/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
+  File "/Users/bboat/Desktop/rl_final_project/simulators/humanoid_rl/humanoid_pybullet_zs.py", line 19, in __init__
+        super().__init__(cfg_env, cfg_agent)super().__init__(cfg_env, cfg_agent)
+
+  File "/Users/bboat/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
+  File "/Users/bboat/Desktop/rl_final_project/simulators/base_zs_env.py", line 45, in __init__
+        self.agent = Agent(cfg_agent, tmp_action_space)self.agent = Agent(cfg_agent, tmp_action_space)
+
+  File "/Users/bboat/Desktop/rl_final_project/simulators/agent.py", line 63, in __init__
+  File "/Users/bboat/Desktop/rl_final_project/simulators/agent.py", line 63, in __init__
+        self.dyn = HumanoidDynamicsPybullet(cfg, action_space)self.dyn = HumanoidDynamicsPybullet(cfg, action_space)
+
+  File "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 56, in __init__
+  File "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 56, in __init__
+        self.reset()self.reset()
+
+  File "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 166, in reset
+  File "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/humanoid_dyn_pybullet.py", line 166, in reset
+        raise RuntimeError("[HumanoidDynamicsPybullet] Failed to reset to valid state after multiple attempts.")raise RuntimeError("[HumanoidDynamicsPybullet] Failed to reset to valid state after multiple attempts.")
+
+RuntimeErrorRuntimeError: : [HumanoidDynamicsPybullet] Failed to reset to valid state after multiple attempts.[HumanoidDynamicsPybullet] Failed to reset to valid state after multiple attempts.
+

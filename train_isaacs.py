@@ -97,6 +97,7 @@ def main(config_file):
     visualize_callback = None
 
   # Constructs evaluation callback.
+  print("\n== Evaluation information ==")
   reset_kwargs_list = []  # Same initial states.
   for _ in range(int(cfg.solver.eval.num_trajectories)):
     env.reset()

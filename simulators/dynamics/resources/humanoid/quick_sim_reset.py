@@ -3,6 +3,7 @@ import pybullet_data
 import time
 import numpy as np
 
+
 # === Choose Reset Type: "stand" or "drop" ===
 reset_type = "stand"  # Change to "drop" to test drop reset
 
@@ -21,6 +22,9 @@ p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
 p.loadURDF("plane.urdf")
 robot_path = "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/resources/humanoid/humanoid.urdf"
 robot_id = p.loadURDF(robot_path, basePosition=[0, 0, 1], baseOrientation=p.getQuaternionFromEuler([1.57, 0, 0]), useFixedBase=False)
+
+
+
 
 # Map joint names
 joint_name_to_idx = {}
@@ -76,6 +80,6 @@ p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
 # === Main Simulation Loop ===
 while p.isConnected():
     pos, orn = p.getBasePositionAndOrientation(robot_id, physicsClientId=client)
-    print(pos)
+    #print(pos)
     p.stepSimulation()
     time.sleep(1. / 240.)

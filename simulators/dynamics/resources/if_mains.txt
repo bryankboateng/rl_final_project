@@ -1,0 +1,312 @@
+### Attempt 1:
+if __name__ == "__main__":
+    client = p.connect(p.GUI)
+    p.setGravity(0, 0, -9.8, physicsClientId=client)
+    humanoid = Humanoid(client)
+    humanoid.reset([0, 0, 1.5])
+    humanoid.apply_action([0.1] * 10)
+
+    joint_sliders = {}
+    for i, idx in enumerate(humanoid.joint_index):
+        joint_name = p.getJointInfo(humanoid.id, idx)[1].decode()
+        lo = p.getJointInfo(humanoid.id, idx)[8]
+        hi = p.getJointInfo(humanoid.id, idx)[9]
+        if hi > lo:  # only create sliders with valid limits
+            joint_sliders[joint_name] = p.addUserDebugParameter(joint_name, lo, hi, 0.0)
+        else:
+            joint_sliders[joint_name] = p.addUserDebugParameter(joint_name, -3.14, 3.14, 0.0)
+
+    p.resetBasePositionAndOrientation(humanoid.id, [0, 0, 4], p.getQuaternionFromEuler([1.57, 0, 0]))
+    for _ in range(240):
+        p.stepSimulation()
+        time.sleep(1. / 240.)
+
+    while p.isConnected():
+        target_angles = []
+        for joint_name in joint_sliders:
+            val = p.readUserDebugParameter(joint_sliders[joint_name])
+            target_angles.append(val)
+
+        humanoid.apply_position(target_angles)
+        p.stepSimulation()
+        obs = humanoid.get_obs()
+        print("Observation:", obs)
+        time.sleep(1. / 240.)
+
+
+
+### Attempt 2
+if __name__ == "__main__":
+    client = p.connect(p.GUI)
+    p.setGravity(0, 0, -9.8, physicsClientId=client)
+    humanoid = Humanoid(client)
+    humanoid.reset([0, 0, 1.5])
+    humanoid.apply_action([0.1] * 10)
+    obs = humanoid.get_obs()
+    print("Observation:", obs)
+    
+    # === SLIDER SETUP ===
+    joint_sliders = {}
+    for i, idx in enumerate(humanoid.joint_index):
+        joint_name = p.getJointInfo(humanoid.id, idx)[1].decode()
+        lo = p.getJointInfo(humanoid.id, idx)[8]
+        hi = p.getJointInfo(humanoid.id, idx)[9]
+        joint_sliders[joint_name] = p.addUserDebugParameter(joint_name, lo, hi, 0.0)
+
+    p.resetBasePositionAndOrientation(humanoid.id, [0, 0, 4], p.getQuaternionFromEuler([1.57, 0, 0]))
+    for _ in range(240):  # simulate falling
+        p.stepSimulation()
+        time.sleep(1. / 240.)
+    #p.disconnect(client)
+    while p.isConnected():
+        pos, orn = p.getBasePositionAndOrientation(humanoid.id, physicsClientId=client)
+        
+        target_angles = []
+        for joint_name in joint_sliders:
+            val = p.readUserDebugParameter(joint_sliders[joint_name])
+            target_angles.append(val)
+
+        humanoid.apply_position(target_angles)
+        p.stepSimulation()
+        #humanoid.apply_action([0.1] * 10)
+        obs = humanoid.get_obs()
+        print("Observation:", obs)
+        print("\n")
+
+
+###Attempt 3
+
+if __name__ == "__main__":
+    client = p.connect(p.GUI)
+    humanoid = Humanoid(client)
+    humanoid.reset([0, 0, 1.5])
+    humanoid.apply_action([0.1] * 10)
+    obs = humanoid.get_obs()
+    print("Observation:", obs)
+
+    p.resetBasePositionAndOrientation(humanoid.id, [0, 0, 4], p.getQuaternionFromEuler([1.57, 0, 0]))
+    for _ in range(240):  # simulate falling
+        p.stepSimulation()
+        time.sleep(1. / 240.)
+    #p.disconnect(client)
+    while p.isConnected():
+        pos, orn = p.getBasePositionAndOrientation(humanoid.id, physicsClientId=client)
+        p.stepSimulation()
+        humanoid.apply_action([0.1] * 10)
+        obs = humanoid.get_obs()
+        print("Observation:", obs)
+        print("\n")
+        #print("target_margin:", humanoid.target_margin())
+        print("\n")
+        safety_margin = humanoid.safety_margin()
+        target_margin = humanoid.target_margin()
+        if any(value < 0 for value in safety_margin.values()):
+            print("Safety margin violated!")
+            safeties = [(k,v) for k,v in safety_margin.items() if v < 0]
+            print("Violations:", safeties)
+        if any(value < 0 for value in target_margin.values()):
+            print("Safety margin violated!")
+            targets = [(k,v) for k,v in target_margin.items() if v < 0]
+            print("targets:", targets)
+       # print("safety_margin:", humanoid.safety_margin())
+
+        time.sleep(1. / 240.)
+
+
+
+This list implies the full set of **joints defined in your URDF**, and their **order and indices** as loaded by PyBullet. Here's a breakdown:
+
+---
+
+### 🔢 **Index (`i`)**
+
+* The integer after `i` (e.g., `i 0`, `i 1`, ...) is the **joint index** used by PyBullet API calls like `setJointMotorControl2`, `getJointState`, etc.
+
+### 📛 **Name (`name b'...'`)**
+
+* The `b'...'` is a **byte-string representation** of the joint name from the URDF (e.g., `b'right_knee'`).
+* Use `.decode()` in Python to turn it into a regular string: `b'right_knee'.decode() → 'right_knee'`.
+
+---
+
+### 🧠 **Interpretation of This List**
+
+These are the **15 joints** in your robot, in this order:
+
+| Index | Joint Name       | Likely Type |
+| ----- | ---------------- | ----------- |
+| 0     | `root`           | `fixed`     |
+| 1     | `chest`          | `spherical` |
+| 2     | `neck`           | `spherical` |
+| 3     | `right_shoulder` | `spherical` |
+| 4     | `right_elbow`    | `revolute`  |
+| 5     | `right_wrist`    | `fixed`     |
+| 6     | `left_shoulder`  | `spherical` |
+| 7     | `left_elbow`     | `revolute`  |
+| 8     | `left_wrist`     | `fixed`     |
+| 9     | `right_hip`      | `spherical` |
+| 10    | `right_knee`     | `revolute`  |
+| 11    | `right_ankle`    | `spherical` |
+| 12    | `left_hip`       | `spherical` |
+| 13    | `left_knee`      | `revolute`  |
+| 14    | `left_ankle`     | `spherical` |
+
+---
+
+[Humanoid] Joint list: [9, 10, 11, 12, 13, 14, 4, 7, 1]
+
+# Partitioning based of joint type
+[Humanoid] Spherical joints: [9, 11, 12, 14, 1]
+[Humanoid] Revolute joints: [10, 13, 4, 7]
+
+# Fusing post Partitioning
+[Humanoid] action on joints format: [10, 13, 4, 7, 9, 11, 12, 14, 1]
+[revolute joints then spherical joints in (roll,pitch,yaw) --> (roll, yaw, pitch)]
+
+action format:
+[right_knee, left_knee, right_elbow, left_elbow, right_hip_roll, right_hip_pitch, right_hip_yaw, right_ankle_roll,\
+ right_ankle_pitch, right_ankle_yaw, left_hip_roll, left_hip_pitch, left_hip_yaw, left_ankle_roll, left_ankle_pitch,\
+  left_ankle_yaw, chest_roll, chest_pitch, chest_yaw]
+
+[revolute list], [spherical list with each triple place in a tuple]
+
+
+
+### ✅ What You Can Do with This Info:
+
+* Use these indices to:
+
+  * **Control joints**: via `apply_position`, `setJointMotorControl2`, etc.
+  * **Read states**: via `getJointStates` or `getJointState`.
+* Decide **which joints to control**:
+
+  * Typically: use only **revolute joints** (`elbow`, `knee`) for simplicity.
+* Optionally:
+
+  * **Freeze** the `spherical` joints if you want them locked (as discussed before).
+  * **Ignore** `fixed` joints (they don’t move or need control).
+
+Would you like a filtered version of this list that includes joint types and controllability?
+
+
+action_center = np.array([
+    # Revolute joints (right_knee, left_knee, right_elbow, left_elbow)
+    0.0,  # right_knee ≈ 0°
+    0.0,  # left_knee
+    np.pi / 2,  # right_elbow ≈ 90°
+    np.pi / 2,  # left_elbow
+
+    # Spherical joints (right_hip): roll, pitch, yaw
+    0.0, 0.0, 0.0,  # right_hip 
+    
+    # Spherical joints (right_ankle)
+    0.0,  0.0, 0.0,  # right_ankle 
+
+    # Spherical joints (left_hip)
+    0.0, 0.0, 0.0,  # left_hip 
+    
+    # Spherical joints (left_ankle)
+    0.0,  0.0, 0.0   # left_ankle 
+])
+
+increment_bounds = np.array([
+    [-0.5, 0.1],            # right_knee: can bend more to absorb force, but avoid hyperextension
+    [-0.5, 0.1],            # left_knee
+
+    [-0.6, 0.6],            # right_elbow: flexibility to move forward/backward
+    [-0.6, 0.6],            # left_elbow
+
+    [-np.pi/2, np.pi/2],    # right_hip: roll
+    [-np.pi/4, np.pi/4],    # right_hip: pitch (less pitch avoids falling)
+    [-np.pi/2, np.pi/2],    # right_hip: yaw
+
+    [-np.pi/4, np.pi/4],    # right_ankle: roll
+    [-np.pi/4, np.pi/4],    # right_ankle: pitch
+    [-np.pi/4, np.pi/4],    # right_ankle: yaw
+
+    [-np.pi/2, np.pi/2],    # left_hip: roll
+    [-np.pi/4, np.pi/4],    # left_hip: pitch
+    [-np.pi/2, np.pi/2],    # left_hip: yaw
+
+    [-np.pi/4, np.pi/4],    # left_ankle: roll
+    [-np.pi/4, np.pi/4],    # left_ankle: pitch
+    [-np.pi/4, np.pi/4],    # left_ankle: yaw
+])
+
+
+Great question — let’s break down your **humanoid control space**.
+
+---
+
+### 🔧 **1. Revolute Joints (4 joints total)**
+
+| Joint       | Range (radians) |
+| ----------- | --------------- |
+| Left Elbow  | \[0, π]         |
+| Right Elbow | \[0, π]         |
+| Left Knee   | \[-π, 0]        |
+| Right Knee  | \[-π, 0]        |
+
+🧠 **So your revolute control space is:**
+
+$$
+\mathcal{U}_{\text{rev}} \subset \mathbb{R}^4 \quad \text{with} \quad u_i \in 
+\begin{cases}
+[0, \pi], & \text{for elbows} \\
+[-\pi, 0], & \text{for knees}
+\end{cases}
+$$
+
+---
+
+### 🎯 **2. Spherical Joints (4 joints × 3 DOF each = 12 params)**
+
+Your spherical joints (hips and ankles) use **Euler angles**: roll, pitch, yaw.
+
+For each spherical joint:
+
+$$
+\text{spherical}_i = [\text{roll}_i, \text{pitch}_i, \text{yaw}_i]
+$$
+
+These are usually unconstrained in theory, but in practice:
+
+* **Safe operating bounds:** $[-0.5, 0.5]$ radians for each axis is a good start.
+* If using `setJointMotorControlMultiDof`, clip roll/pitch/yaw before converting to quaternion.
+
+🧠 **So your spherical control space is:**
+
+$$
+\mathcal{U}_{\text{sph}} \subset \mathbb{R}^{12} \quad \text{with} \quad \text{roll/pitch/yaw} \in [-0.5, 0.5]
+$$
+
+---
+
+### 📐 **Total Control Space**
+
+| Joint Type | DOF | Dimension | Bounds                                    |
+| ---------- | --- | --------- | ----------------------------------------- |
+| Revolute   | 1   | 4         | \[0, π] and \[−π, 0]                      |
+| Spherical  | 3   | 12        | Typically \[−0.5, 0.5] for roll/pitch/yaw |
+| **Total**  | —   | **16**    | Combined 16-dimensional control vector    |
+
+---
+
+### 🧩 **How to Represent Actions**
+
+If you're using **center\_sampling**, define:
+
+```python
+action_center = [default values for 16 DOF]  # standing pose
+action = action_center + small_deltas
+```
+
+If you're using **increment**, then actions are deltas added on top of current joint values:
+
+```python
+action = current_joint_values + clipped_increment
+```
+
+---
+
+Would you like a NumPy-ready function that returns this 16D action with appropriate bounds?

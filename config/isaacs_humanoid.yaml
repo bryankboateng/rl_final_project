@@ -13,7 +13,7 @@ agent:
   dt: 0.02
   apply_force: false
   replace_adv_with_dr: false
-  force: 50
+  force: 10
   force_scale: 1.0
   force_reset_time: 50
   force_info:
@@ -28,16 +28,32 @@ agent:
   envtype: normal
   action_range: 
     ctrl: &ctrl_range
-      - [-0.5, 0.5]  # right_hip
-      - [-0.5, 0.5]  # right_knee
-      - [-0.5, 0.5]  # right_ankle
-      - [-0.5, 0.5]  # left_hip
-      - [-0.5, 0.5]  # left_knee
-      - [-0.5, 0.5]  # left_ankle
-      - [-0.5, 0.5]  # right_shoulder
-      - [-0.5, 0.5]  # right_elbow
-      - [-0.5, 0.5]  # left_shoulder
-      - [-0.5, 0.5]  # left_elbow
+      # Revolute joints
+      - [-0.5,  0.1]   # right_knee: bend more, avoid hyperextension
+      - [-0.5,  0.1]   # left_knee
+      - [-0.6,  0.6]   # right_elbow
+      - [-0.6,  0.6]   # left_elbow
+
+      # Spherical joints (roll, yaw, pitch) — values in radians
+      - [-1.0,  1.0]   # right_hip roll
+      - [-0.8,  0.8]   # right_hip yaw  (visually behaves like pitch)
+      - [-1.0,  1.0]   # right_hip pitch
+
+      - [-0.4,  0.4]   # right_ankle roll
+      - [-0.4,  0.4]   # right_ankle yaw
+      - [-0.4,  0.4]   # right_ankle pitch
+
+      - [-1.0,  1.0]   # left_hip roll
+      - [-0.8,  0.8]   # left_hip yaw
+      - [-1.0,  1.0]   # left_hip pitch
+
+      - [-0.4,  0.4]   # left_ankle roll
+      - [-0.4,  0.4]   # left_ankle yaw
+      - [-0.4,  0.4]   # left_ankle pitch
+
+      - [-0.4,  0.4]   # chest roll (optional, stabilize torso)
+      - [-0.4,  0.4]   # chest yaw
+      - [-0.4,  0.4]   # chest pitch
     dstb: &dstb_range
       - [-1., 1.]
       - [-1., 1.]
@@ -47,19 +63,37 @@ agent:
       - [-0.05, 0.05]
   action_type: center_sampling
   action_center:
-    - 0.0   # right_hip
-    - -0.2  # right_knee
-    - 0.0   # right_ankle
-    - 0.0   # left_hip
-    - -0.2  # left_knee
-    - 0.0   # left_ankle
-    - 0.0   # right_shoulder
-    - 1.5   # right_elbow
-    - 0.0   # left_shoulder
-    - 1.5   # left_elbow
+  # Spherical joints (interpreted visually as [roll, yaw, pitch])
+  # Even if technically it's [roll, pitch, yaw], this is how they affect the robot
+    # === Revolute joints ===
+    - -0.262  # right_knee ≈ -π/12
+    - -0.262  # left_knee
+    - 1.571   # right_elbow ≈ π/2
+    - 1.571   # left_elbow
+
+    # === Spherical joints ===
+    # Format: (roll, yaw, pitch)
+    - 0.0     # right_hip_roll
+    - 0.0     # right_hip_yaw
+    - 0.524   # right_hip_pitch ≈ π/6
+
+    - 0.0     # right_ankle_roll
+    - 0.0     # right_ankle_yaw
+    - 0.0     # right_ankle_pitch
+
+    - 0.0     # left_hip_roll
+    - 0.0     # left_hip_yaw
+    - 0.524   # left_hip_pitch
+
+    - 0.0     # left_ankle_roll
+    - 0.0     # left_ankle_yaw
+    - 0.0     # left_ankle_pitch
+
+    - 0.0     # chest_roll
+    - 0.0     # chest_yaw
+    - -0.524  # chest_pitch ≈ -π/6
   target_margin:
     - pelvis_height_target
-    - upright_roll
     - upright_pitch
     - right_knee_neutral
     - left_knee_neutral
@@ -67,17 +101,9 @@ agent:
     - left_elbow_neutral
   safety_margin:
     - pelvis_height
-    - abs_roll
     - abs_pitch
-    - right_knee_min
-    - right_knee_max
-    - left_knee_min
-    - left_knee_max
-    - right_elbow_min
-    - right_elbow_max
-    - left_elbow_min
-    - left_elbow_max
-  obs_dim: 28  # 3 lin_vel + 3 ang_vel + 10 joint_pos + 10 joint_vel + 2 foot contact
+ 
+  obs_dim: 17  # 3 base lin_vel + 3 base ang_vel + 2 base euler (roll, pitch) + 1 base height + 2 chest + 4 hips (2 per hip) + 2 knees
   obsrv_list: &obsrv_list
     ctrl: null
     dstb: null
@@ -107,7 +133,7 @@ solver:
   memory_capacity: 1_000_000
   softmax_rationality: 3.0
   # == logging ==
-  use_wandb: true
+  use_wandb: false
   project_name: RL_FINAL_PROJECT
   name: humanoid_isaacs
   max_model: 20
@@ -122,7 +148,7 @@ solver:
     num_trajectories: 20
     timeout: 100
     end_criterion: reach-avoid
-  obs_dim: 36
+  obs_dim: 17  # 3 base lin_vel + 3 base ang_vel + 2 base euler (roll, pitch) + 1 base height + 2 chest + 4 hips (2 per hip) + 2 knees
   obsrv_list:  *obsrv_list
   rollout_end_criterion: reach-avoid
   # == hyperparameters of actors and critics ==
@@ -192,8 +218,8 @@ arch:
     activation: Sin
     append_dim: 0
     latent_dim: 0
-    obsrv_dim: 36
-    action_dim: 12
+    obsrv_dim: 17
+    action_dim: 24
     action_range: *ctrl_range
     pretrained_path:
   actor_1:
@@ -204,7 +230,7 @@ arch:
     activation: Sin
     append_dim: 0
     latent_dim: 0
-    obsrv_dim: 36
+    obsrv_dim: 17
     action_dim: 6
     action_range: *dstb_range
     pretrained_path:
@@ -216,8 +242,8 @@ arch:
     activation: Sin
     append_dim: 0
     latent_dim: 0
-    obsrv_dim: 36
-    action_dim: 18
+    obsrv_dim: 17
+    action_dim: 30 # 24 + 6
     pretrained_path:
 
 eval:
