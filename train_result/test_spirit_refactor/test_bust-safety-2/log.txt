@@ -7,16 +7,16 @@ wandb: wandb version 0.19.11 is available!  To upgrade, please run:
 wandb:  $ pip install wandb --upgrade
 wandb: Tracking run with wandb version 0.16.6
 wandb: Tracking run with wandb version 0.16.6
-wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250509_220005-ezjp19bh
+wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250509_221035-dfxh16nl
 wandb: Run `wandb offline` to turn off syncing.
-wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250509_220005-ezjp19bh
+wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250509_221035-dfxh16nl
 wandb: Run `wandb offline` to turn off syncing.
 wandb: Syncing run debug-bust-safety-2
 wandb: Syncing run debug-bust-safety-2
 wandb:  View project at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet
 wandb:  View project at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet
-wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet/runs/ezjp19bh
-wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet/runs/ezjp19bh
+wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet/runs/dfxh16nl
+wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet/runs/dfxh16nl
 
 == Solver information ==
   => Restores ctrl at train_result/isaacs_spirit/model/ctrl/ctrl-2500000.pth.
@@ -223,7 +223,7 @@ train_result/isaacs_spirit/model/ctrl
 Spirit Pybullet initialized
 #params in actor: 283148
 #params in critic: 79362
-We want to use: cuda, and Agent uses: cuda
+We want to use: cpu, and Agent uses: cpu
 Critic is using cuda:  False
 
 == Learning starts ==
@@ -242,20 +242,16 @@ Traceback (most recent call last):
     self.update()
   File "/home/bb/Desktop/rl_final_project/base_training.py", line 141, in learn
     self.update()
-  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 269, in update
-    batch = self.sample_batch()
-  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 269, in update
-    batch = self.sample_batch()
-  File "/home/bb/Desktop/rl_final_project/base_training.py", line 79, in sample_batch
-    return Batch(transitions, device=self.device)
-  File "/home/bb/Desktop/rl_final_project/base_training.py", line 79, in sample_batch
-    return Batch(transitions, device=self.device)
-  File "/home/bb/Desktop/rl_final_project/utils.py", line 249, in __init__
-    self.non_final_obsrv_nxt = th.cat(batch.s_)[self.non_final_mask].to(device) # Valid next observtions for reward-to-go
-  File "/home/bb/Desktop/rl_final_project/utils.py", line 249, in __init__
-    self.non_final_obsrv_nxt = th.cat(batch.s_)[self.non_final_mask].to(device) # Valid next observtions for reward-to-go
-RuntimeError: indices should be either on cpu or on the same device as the indexed tensor (cpu)
-RuntimeError: indices should be either on cpu or on the same device as the indexed tensor (cpu)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 278, in update
+    loss_q, loss_pi, loss_ent, loss_alpha = self.update_one(batch, timer)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 278, in update
+    loss_q, loss_pi, loss_ent, loss_alpha = self.update_one(batch, timer)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 212, in update_one
+    loss_q = self.critic.update(
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 212, in update_one
+    loss_q = self.critic.update(
+TypeError: update() got an unexpected keyword argument 'entropy_motives'
+TypeError: update() got an unexpected keyword argument 'entropy_motives'
 Traceback (most recent call last):
   File "train_l2.py", line 218, in <module>
     main(args.config_file)
@@ -263,13 +259,11 @@ Traceback (most recent call last):
     loss_record, eval_record, violation_record, episode_record, pq_top_k = solver.learn(
   File "/home/bb/Desktop/rl_final_project/base_training.py", line 141, in learn
     self.update()
-  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 269, in update
-    batch = self.sample_batch()
-  File "/home/bb/Desktop/rl_final_project/base_training.py", line 79, in sample_batch
-    return Batch(transitions, device=self.device)
-  File "/home/bb/Desktop/rl_final_project/utils.py", line 249, in __init__
-    self.non_final_obsrv_nxt = th.cat(batch.s_)[self.non_final_mask].to(device) # Valid next observtions for reward-to-go
-RuntimeError: indices should be either on cpu or on the same device as the indexed tensor (cpu)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 278, in update
+    loss_q, loss_pi, loss_ent, loss_alpha = self.update_one(batch, timer)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 212, in update_one
+    loss_q = self.critic.update(
+TypeError: update() got an unexpected keyword argument 'entropy_motives'
 Traceback (most recent call last):
   File "train_l2.py", line 218, in <module>
     main(args.config_file)
@@ -277,10 +271,8 @@ Traceback (most recent call last):
     loss_record, eval_record, violation_record, episode_record, pq_top_k = solver.learn(
   File "/home/bb/Desktop/rl_final_project/base_training.py", line 141, in learn
     self.update()
-  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 269, in update
-    batch = self.sample_batch()
-  File "/home/bb/Desktop/rl_final_project/base_training.py", line 79, in sample_batch
-    return Batch(transitions, device=self.device)
-  File "/home/bb/Desktop/rl_final_project/utils.py", line 249, in __init__
-    self.non_final_obsrv_nxt = th.cat(batch.s_)[self.non_final_mask].to(device) # Valid next observtions for reward-to-go
-RuntimeError: indices should be either on cpu or on the same device as the indexed tensor (cpu)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 278, in update
+    loss_q, loss_pi, loss_ent, loss_alpha = self.update_one(batch, timer)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 212, in update_one
+    loss_q = self.critic.update(
+TypeError: update() got an unexpected keyword argument 'entropy_motives'

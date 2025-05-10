@@ -68,8 +68,8 @@ agent:
   reset_criterion: failure
 
 solver:
-  device: cuda
-  rollout_env_device: cuda
+  device: cpu
+  rollout_env_device: cpu
   num_envs: 1
   num_actors: 1
   num_critics: 1
