@@ -820,7 +820,9 @@ class Actor(BaseBlock, BasePolicy):
         
         # Get deterministic action
         with torch.no_grad():
-           action = self.net(torch.FloatTensor(obsrv))
+           device=next(self.net.parameters()).device
+           obsrv_tensor = obsrv.clone().detach().to(device)
+           action = self.net(obsrv_tensor)
         
         if isinstance(action, torch.Tensor):
            action = action.cpu().numpy()
@@ -1093,7 +1095,10 @@ class Critic(BaseBlock):
         # 4. return average
 
         with torch.no_grad():
-            q1, q2 = self.net(obsrv, action)
+            device=next(self.net.parameters()).device
+            action_tensor = action.clone().detach().to(device)
+            obsrv_tensor = obsrv.clone().detach().to(device)
+            q1, q2 = self.net(obsrv_tensor, action_tensor)
             average = (q1 + q2) / 2
 
         if isinstance(average, torch.Tensor):

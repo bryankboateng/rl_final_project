@@ -132,11 +132,11 @@ solver:
     eval: true
     net_name: ctrl
     actor_type: max
-    step: 7_500_000
-    model_folder: train_result/test_spirit_refactor/test_isaacs_2/model
-    ctrl_type: shield_value # safety, performance, shield_value, shield_rollout
+    step: 2_500_000
+    model_folder: train_result/isaacs_spirit/model
+    ctrl_type: safety # safety, performance, shield_value, shield_rollout
     epsilon: -0.28
-    gameplay_config: train_result/test_spirit_refactor/test_isaacs_2/config.yaml
+    gameplay_config: train_result/isaacs_spirit/config.yaml
     gameplay_horizon: 300
   eval:   
     b4_learn: false
