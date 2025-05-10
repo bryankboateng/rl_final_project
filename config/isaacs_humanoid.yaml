@@ -8,7 +8,7 @@ agent:
   dyn: HumanoidPybullet
   footprint: none
   verbose: false
-  gui: false
+  gui: true
   gui_imaginary: false
   dt: 0.02
   apply_force: false
@@ -153,7 +153,7 @@ solver:
   rollout_end_criterion: reach-avoid
   # == hyperparameters of actors and critics ==
   critic_0:
-    eval: false
+    eval: true
     net_name: central
     lr: 0.0001
     lr_schedule: false
@@ -171,7 +171,7 @@ solver:
     opt_type: AdamW
     update_target_period: 2
   actor_0:
-    eval: false
+    eval: true
     net_name: ctrl
     actor_type: max
     learn_alpha: true
@@ -190,7 +190,7 @@ solver:
     lr_decay: 0.9    
     lr_al_decay: 0.9
   actor_1:
-    eval: false
+    eval: true
     net_name: dstb
     actor_type: min
     learn_alpha: true
@@ -247,7 +247,7 @@ arch:
     pretrained_path:
 
 eval:
-  model_type: [highest, highest] # [ctrl, dstb], highest, safest, worst, manual
-  step: [0, 0] # [ctrl, dstb], the step to use if "manual" is chosen for MODEL_TYPE
+  model_type: [manual, highest] # [ctrl, dstb], highest, safest, worst, manual
+  step: [1_000_000, 0] # [ctrl, dstb], the step to use if "manual" is chosen for MODEL_TYPE
   eval_timeout: 1000 # how long do we evaluate in real rollout env
   imaginary_horizon: 100 # the horizon of the imaginary env

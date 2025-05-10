@@ -39,10 +39,10 @@ import pybullet_data
 
 
 class Humanoid:
-    def __init__(self, client, height=1.5, orientation=None, env_type=None, payload_max=0, **kwargs):
+    def __init__(self, client, height=1.5, orientation=None, env_type=None, payload_max=0, timer=None, cnt=None, **kwargs):
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.client = client
-        robot_path = "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid/humanoid.urdf"
+        robot_path = "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/resources/humanoid/humanoid.urdf" #"/User/bboat/Desktop/rl_final_project/simulators/dynamics/resources/humanoid/humanoid.urdf"
         self.id = p.loadURDF(robot_path, basePosition=[0, 0, 1], baseOrientation=p.getQuaternionFromEuler([1.57, 0, 0]), useFixedBase=False)
         self.type = "sim"
         self.dim_x = kwargs.get("dim_x", 17)
@@ -50,6 +50,8 @@ class Humanoid:
         self.center = kwargs.get("action_center", None)
         self.target_list = kwargs.get("target_list", [])
         self.safety_list = kwargs.get("safety_list", [])
+        self.cnt = 0
+        self.timer = timer
 
         self.joint_index = self.make_joint_list()
         #assert len(self.joint_index) == 10, f"Expected 10 joints, got {len(self.joint_index)}. Check URDF names."
@@ -257,6 +259,16 @@ class Humanoid:
         # For some reason, spherical joints in sim follow a different order
 
         # === Assemble observation ===
+        # obs = np.concatenate([
+        #     base_lin_vel,             # [3]
+        #     base_ang_vel,             # [3]
+        #     [base_euler[0], base_euler[1]],  # roll, pitch [2]
+        #     [base_z],                 # pelvis height [1]
+        #     [chest_roll, chest_pitch], # [2]
+        #     [r_hip_roll, r_hip_pitch, l_hip_roll, l_hip_pitch], # [4]
+        #     [angle_right_knee, angle_left_knee],  # knee joint angles [2]
+        # ])
+        
         obs = np.concatenate([
             base_lin_vel,             # [3]
             base_ang_vel,             # [3]
@@ -265,8 +277,17 @@ class Humanoid:
             [chest_roll, chest_pitch], # [2]
             [r_hip_roll, r_hip_pitch, l_hip_roll, l_hip_pitch], # [4]
             [angle_right_knee, angle_left_knee],  # knee joint angles [2]
+            [self.get_time_signal()],  # time signal [1]
         ])
+        
         return obs
+    
+    
+    def get_time_signal(self):
+        if self.timer is None or self.cnt is None:
+            return 0.0
+        return np.clip(2 * (self.cnt / self.timer) - 1, -1, 1)
+
 
  
     

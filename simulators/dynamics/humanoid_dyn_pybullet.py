@@ -54,6 +54,11 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
         self.rendered_img = None
         self.state = None
         self.cnt = 0
+        
+        try:
+            self.timer = float(config.timer)
+        except:
+            self.timer = None
 
         kwargs = {
             "action_center": self.action_center,
@@ -86,7 +91,7 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
             if self.robot is None:
                 super().reset(**kwargs)
                 self.robot = Humanoid(self.client, height=height, orientation=rotation,
-                                    target_list=self.target_list, safety_list=self.safety_list, **kwargs)
+                                    target_list=self.target_list, safety_list=self.safety_list, timer=None, cnt=None, **kwargs)
                 
             # Always reset to near standing position
             p.resetBasePositionAndOrientation(self.robot.id, [0, 0, height], rotation, physicsClientId=self.client)
@@ -240,6 +245,7 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
 
         self.state = np.array(base_state, dtype=np.float32)
         self.cnt += 1
+        self.robot.cnt = self.cnt
 
         # === Return depending on adversarial type ===
         if adversary is not None:

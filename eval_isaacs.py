@@ -12,6 +12,7 @@ import argparse
 from omegaconf import OmegaConf
 from ISAACS import ISAACSTrainer
 from utils import get_model_index
+import numpy as np
 
 
 def main(args):
@@ -36,6 +37,10 @@ def main(args):
   elif cfg.agent.dyn == "PointMass":
     from simulators import PointMassZeroSumEnv
     env_class = PointMassZeroSumEnv
+    import pybullet as p
+  elif cfg.agent.dyn == "HumanoidPybullet":
+    from simulators import HumanoidPybulletZeroSumEnv
+    env_class = HumanoidPybulletZeroSumEnv
     import pybullet as p
   else:
     raise ValueError("Dynamics type not supported!")
@@ -92,10 +97,14 @@ def main(args):
     d = solver.dstb.net(*s_dstb)
     # critic_q = max(solver.critic.net(s.float().to(solver.device), solver.combine_action(u, d)))
     # print("\r{}".format(critic_q), end="")
-    a = {'ctrl': u.detach().numpy(), 'dstb': d.detach().numpy()}
+    d_zero = np.zeros_like(d.detach().numpy())
+    # print("ctrl: {}, dstb: {}".format(u.detach().numpy(), d_zero))
+    a = {'ctrl': u.detach().numpy(), 'dstb': d_zero}
     s_, r, done, info = env.step(a, cast_torch=True)
     s = s_
     if done:
+      print("\nEpisode finished")
+      print(info['done_type'], info['g_x'])
       if "Pybullet" in cfg.agent.dyn:
         if p.getKeyboardEvents().get(49):
           continue
