@@ -37,18 +37,19 @@ class ISAACSTrainer(BaseTraining):
             seed: Random seed
         """
         super().__init__(cfg_solver, cfg_arch, seed)
-        # TODO: Set up control and disturbance agents from self.actors dict
+        
         self.cfg_solver = cfg_solver
         self.cfg_arch = cfg_arch
         self.seed = seed
-        
+
+        # Set up control and disturbance agents from self.actors dict
         self.ctrl = self.actors['ctrl']
         self.dstb = self.actors['dstb']
         self.critic = self.critics['central']
 
         self.save_top_k_ctrl = int(cfg_solver.save_top_k.ctrl)
         self.save_top_k_dstb = int(cfg_solver.save_top_k.dstb)
-        # Always keeps the dummy dstb (no dstb) and has placeholder for the current.
+        # Always keeps the dummy dstb (no dstb) and has placeholder for the current
         self.aux_metric = cfg_solver.eval.aux_metric
         self.leaderboard = np.full(
             shape=(self.save_top_k_ctrl + 1, self.save_top_k_dstb + 2, 1 + len(self.aux_metric)), dtype=float,
@@ -70,11 +71,10 @@ class ISAACSTrainer(BaseTraining):
         self.ctrl_eval = copy.deepcopy(self.ctrl)
         self.dstb_eval = copy.deepcopy(self.dstb)
     
-
         # Disturbance sampling distribution settings
         self.softmax_rationality = cfg_solver.softmax_rationality
         self.ctrl_update_ratio = cfg_solver.ctrl_update_ratio
-        self.cnt_dstb_updates = 0  # Counts how many dstb updates since last ctrl update
+        self.cnt_dstb_updates = 0 # Counts how many dstb updates since last ctrl update
 
         # Leaderboard: shape (K_ctrl + 1, K_dstb + 2, metrics)
         self.leaderboard = np.nan * np.ones((self.save_top_k_ctrl + 1, self.save_top_k_dstb + 2, 3))
@@ -90,6 +90,7 @@ class ISAACSTrainer(BaseTraining):
         Returns:
             Combined action tensor.
         """
+
         return torch.cat([ctrl_action, dstb_action], dim=-1)
 
     def get_dstb_sampler(self) -> RandomPolicy:
@@ -98,17 +99,19 @@ class ISAACSTrainer(BaseTraining):
 
         This is used to sample disturbance actions for the current episode.
         """
-        dtsb_idxs = np.array(list(range(len(self.dstb_ckpts))) + [-1]) #-1 to account for dummy dstb
+
+        dtsb_idxs = np.array(list(range(len(self.dstb_ckpts))) + [-1]) # -1 to account for dummy dstb
         logit = np.mean(self.leaderboard[:len(self.ctrl_ckpts), dtsb_idxs, 0], axis=0)  # Placeholder for the logit value
-        # Compute the softmax distribution over the disturbance policies.
-        prob_un = np.exp(-self.softmax_rationality * logit)  # negative here since dstb minimizes.
-        softmax_dist = prob_un / np.sum(prob_un) #minus sign on logits since the better dtsb minimizes scores
+        # Compute the softmax distribution over the disturbance policies
+        prob_un = np.exp(-self.softmax_rationality * logit)  # Negative here since dstb minimizes
+        softmax_dist = prob_un / np.sum(prob_un) # Minus sign on logits since the better dtsb minimizes scores
         dtsb_idx = self.rng.choice(dtsb_idxs, p=softmax_dist)
-        # If the chosen index is -1, use the dummy disturbance policy.
+
+        # If the chosen index is -1, use the dummy disturbance policy
         if dtsb_idx == -1:
             return self.dummy_dstb_policy
         else:
-            # Otherwise, return the corresponding disturbance policy.
+            # Otherwise, return the corresponding disturbance policy
             chosen_dstb = copy.deepcopy(self.dstb)
             chosen_dstb.restore(self.dstb_ckpts[dtsb_idx], self.model_folder, verbose=False)
             return chosen_dstb
@@ -126,10 +129,11 @@ class ISAACSTrainer(BaseTraining):
         Returns:
             List of action dictionaries with 'ctrl' and 'dstb' keys
         """
+
         obsrv_all = obsrv_all.float().to(self.device)
 
-        # Gets control actions.
-        if self.cnt_step < self.warmup_steps:  # Warms up with random actions.
+        # Get control actions
+        if self.cnt_step < self.warmup_steps:  # Warm up with random actions
             ctrl_action_all, _ = self.rnd_ctrl_policy.get_action(obsrv_all)
         else:
             with torch.no_grad():
@@ -137,7 +141,7 @@ class ISAACSTrainer(BaseTraining):
                     ctrl_action_all, _ = self.ctrl.sample(obsrv_all, append=None, latent=None)
                 else:
                     ctrl_action_all = self.ctrl.net(obsrv_all, append=None, latent=None)
-            ctrl_action_all = ctrl_action_all.cpu().numpy()  # (num_envs, ctrl_action_dim)
+            ctrl_action_all = ctrl_action_all.cpu().numpy() # (num_envs, ctrl_action_dim)
 
         action_all = []
         dstb_sampler = self.dstb_sampler_list[0]
@@ -147,11 +151,11 @@ class ISAACSTrainer(BaseTraining):
                 assert not isinstance(dstb_sampler, DummyPolicy), "Dummy policy cannot be stochastic."
                 dstb_action, _ = dstb_sampler.sample(
                     obsrv_all[0], agents_action={"ctrl": ctrl_action_all[0]}, append=None, latent=None
-                )  # (dstb_action_dim,)
+                ) # (dstb_action_dim,)
             else:
                 dstb_action, _ = dstb_sampler.get_action(
                     obsrv_all[0], agents_action={"ctrl": ctrl_action_all[0]}, append=None, latent=None
-                )  # (dstb_action_dim,)
+                ) # (dstb_action_dim,)
         if isinstance(dstb_action, torch.Tensor):
             dstb_action = dstb_action.cpu().numpy()
             
@@ -176,7 +180,7 @@ class ISAACSTrainer(BaseTraining):
 
 
         for env_idx, (done, info) in enumerate(zip(done_all, info_all)):
-        # Stores the transition in memory. Note that `obsrv` and `action` are cpu tensors.
+        # Stores the transition in memory. Note that `obsrv` and `action` are cpu tensors
             action = {k: torch.FloatTensor(v[None]) for k, v in action_all[env_idx].items()}
             self.store_transition(
                 obsrv_all[[env_idx]].cpu(), action, r_all[env_idx], obsrv_nxt_all[[env_idx]].cpu(), done, info
@@ -193,11 +197,11 @@ class ISAACSTrainer(BaseTraining):
                 self.cnt_num_episode += 1
                 self.dstb_sampler_list[env_idx] = self.get_dstb_sampler()
 
-        # Updates records.
+        # Updates records
         self.violation_record.append(self.cnt_safety_violation)
         self.episode_record.append(self.cnt_num_episode)
 
-        # Updates counter.
+        # Updates counter
         self.cnt_step += self.num_envs
         self.cnt_opt_period += self.num_envs
         self.cnt_eval_period += self.num_envs
@@ -283,7 +287,7 @@ class ISAACSTrainer(BaseTraining):
         else:
             loss_ctrl = loss_ent_ctrl = loss_alpha_ctrl = 0.0
 
-        # ------------------ Disturbance (Dstb) Update ------------------
+        # ----------------- Disturbance (Dstb) Update -----------------
         if update_dstb and timer % self.dstb.update_period == 0:
             update_alpha = self.cnt_step >= self.warmup_steps
 
@@ -418,7 +422,6 @@ class ISAACSTrainer(BaseTraining):
         self.cnt_dstb_updates += 1
 
 
-
     def update_ctrl_agent(
         self, env: BaseZeroSumEnv, rollout_env: BaseZeroSumEnv, ctrl_ckpt_step: int
     ):
@@ -457,12 +460,12 @@ class ISAACSTrainer(BaseTraining):
 
 
     def prune_leaderboard(self):
-        self.critic.save(self.cnt_step, self.model_folder)  # Always saves critic checkpoints.
+        self.critic.save(self.cnt_step, self.model_folder) # Always saves critic checkpoints
         with np.printoptions(precision=3, suppress=False):
             print(self.leaderboard[..., 0])
         if len(self.ctrl_ckpts) == self.save_top_k_ctrl:
             ctrl_avg_metric = np.nanmean(self.leaderboard[..., 0], axis=1)
-            ctrl_idx = np.argmin(ctrl_avg_metric)  # Removes the ctrl ckpt that has the minimum average metric.
+            ctrl_idx = np.argmin(ctrl_avg_metric)  # Removes the ctrl ckpt that has the minimum average metric
             with np.printoptions(precision=3, suppress=False):
                 print("ctrl results", ctrl_avg_metric)
             if ctrl_idx != self.save_top_k_ctrl:
@@ -478,7 +481,7 @@ class ISAACSTrainer(BaseTraining):
 
         if len(self.dstb_ckpts) == self.save_top_k_dstb:
             dstb_avg_metric = np.nanmean(self.leaderboard[:, :-1, 0], axis=0)
-            dstb_idx = np.argmax(dstb_avg_metric)  # Removes the dstb ckpt that has the maximum average metric.
+            dstb_idx = np.argmax(dstb_avg_metric)  # Removes the dstb ckpt that has the maximum average metric
             with np.printoptions(precision=3, suppress=False):
                 print("dstb results", dstb_avg_metric)
             if dstb_idx != self.save_top_k_dstb:
@@ -494,9 +497,9 @@ class ISAACSTrainer(BaseTraining):
     
     
     def update_hyper_param(self):
-        self.ctrl.update_hyper_param()  # lr_pi, lr_alpha
-        self.dstb.update_hyper_param()  # lr_pi, lr_alpha
-        flag_rst_alpha = self.critic.update_hyper_param()  # lr_q, gamma
+        self.ctrl.update_hyper_param() # lr_pi, lr_alpha
+        self.dstb.update_hyper_param() # lr_pi, lr_alpha
+        flag_rst_alpha = self.critic.update_hyper_param() # lr_q, gamma
         if flag_rst_alpha:
             self.ctrl.reset_alpha()
             self.dstb.reset_alpha()
@@ -590,4 +593,3 @@ class ISAACSTrainer(BaseTraining):
     def init_learn(self, env: BaseEnv) -> Union[BaseEnv, VecEnvBase]:
         self.cnt_dstb_updates = 0
         return super().init_learn(env)
-
