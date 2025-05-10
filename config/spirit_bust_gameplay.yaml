@@ -74,7 +74,7 @@ solver:
   project_name: spirit-rl-pybullet
   name: debug-bust-gameplay
   max_model: 20
-  save_top_k: 20
+  save_top_k: 10
   out_folder: train_result/test_spirit_refactor/test_bust-gameplay
   # == hyperparameters of actors and critics ==
   critic_0:
