@@ -1,0 +1,301 @@
+STDOUT will be forked to train_result/test_spirit_refactor/test_bust-value-2/log.txt
+wandb: Currently logged in as: bryankboateng (bryankboateng-princeton-university). Use `wandb login --relogin` to force relogin
+wandb: Currently logged in as: bryankboateng (bryankboateng-princeton-university). Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.19.11 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: wandb version 0.19.11 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.16.6
+wandb: Tracking run with wandb version 0.16.6
+wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250509_220628-o70mrxds
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Run data is saved locally in /home/bb/Desktop/rl_final_project/wandb/run-20250509_220628-o70mrxds
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run debug-bust-value-2
+wandb: Syncing run debug-bust-value-2
+wandb:  View project at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet
+wandb:  View project at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet
+wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet/runs/o70mrxds
+wandb:  View run at https://wandb.ai/bryankboateng-princeton-university/spirit-rl-pybullet/runs/o70mrxds
+
+== Solver information ==
+  => Restores ctrl at train_result/isaacs_spirit/model/ctrl/ctrl-2500000.pth.
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=50, out_features=128, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=128, out_features=128, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=128, out_features=1, bias=True)
+    (act_1): Identity()
+  )
+)
+Q1: MLP(
+  (moduleList): ModuleList(
+    (0): Sequential(
+      (linear_1): Linear(in_features=50, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (1-2): 2 x Sequential(
+      (linear_1): Linear(in_features=128, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (3): Sequential(
+      (linear_1): Linear(in_features=128, out_features=1, bias=True)
+      (act_1): Identity()
+    )
+  )
+)
+Q2: MLP(
+  (moduleList): ModuleList(
+    (0): Sequential(
+      (linear_1): Linear(in_features=50, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (1-2): 2 x Sequential(
+      (linear_1): Linear(in_features=128, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (3): Sequential(
+      (linear_1): Linear(in_features=128, out_features=1, bias=True)
+      (act_1): Identity()
+    )
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=32, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=6, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=32, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=6, bias=True)
+    (act_1): Identity()
+  )
+)
+Pretrained ctrl: train_result/isaacs_spirit/model, step 2500000
+Loading pretrained models into ctrl
+
+== Solver information ==
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=50, out_features=128, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=128, out_features=128, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=128, out_features=1, bias=True)
+    (act_1): Identity()
+  )
+)
+Q1: MLP(
+  (moduleList): ModuleList(
+    (0): Sequential(
+      (linear_1): Linear(in_features=50, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (1-2): 2 x Sequential(
+      (linear_1): Linear(in_features=128, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (3): Sequential(
+      (linear_1): Linear(in_features=128, out_features=1, bias=True)
+      (act_1): Identity()
+    )
+  )
+)
+Q2: MLP(
+  (moduleList): ModuleList(
+    (0): Sequential(
+      (linear_1): Linear(in_features=50, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (1-2): 2 x Sequential(
+      (linear_1): Linear(in_features=128, out_features=128, bias=True)
+      (act_1): Sin()
+    )
+    (3): Sequential(
+      (linear_1): Linear(in_features=128, out_features=1, bias=True)
+      (act_1): Identity()
+    )
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=32, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=12, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=32, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=12, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=32, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=6, bias=True)
+    (act_1): Identity()
+  )
+)
+ModuleList(
+  (0): Sequential(
+    (linear_1): Linear(in_features=32, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (1-2): 2 x Sequential(
+    (linear_1): Linear(in_features=256, out_features=256, bias=True)
+    (act_1): Sin()
+  )
+  (3): Sequential(
+    (linear_1): Linear(in_features=256, out_features=6, bias=True)
+    (act_1): Identity()
+  )
+)
+
+Restore model information
+WARNING: using model index stored in dstb
+train_result/isaacs_spirit/model/dstb
+	Model type: manual
+		Manual pick a model iteration: 1000000
+WARNING: using model index stored in ctrl
+train_result/isaacs_spirit/model/ctrl
+	Model type: manual
+		Manual pick a model iteration: 2500000
+  => Restores ctrl at train_result/isaacs_spirit/model/ctrl/ctrl-2500000.pth.
+  => Restores dstb at train_result/isaacs_spirit/model/dstb/dstb-1000000.pth.
+  => Restores central at train_result/isaacs_spirit/model/central/central-2500000.pth.
+  => Restored target network from train_result/isaacs_spirit/model/central/central-2500000.pth
+
+== Environment information ==
+/home/bb/miniconda3/envs/gameplay/lib/python3.8/site-packages/gym/spaces/box.py:127: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
+  logger.warn(f"Box bound precision lowered by casting to {self.dtype}")
+/home/bb/miniconda3/envs/gameplay/lib/python3.8/site-packages/gym/spaces/box.py:127: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
+  logger.warn(f"Box bound precision lowered by casting to {self.dtype}")
+Spirit Pybullet initialized
+#params in actor: 283148
+#params in critic: 79362
+We want to use: cpu, and Agent uses: cpu
+Critic is using cuda:  False
+
+== Learning starts ==
+0Traceback (most recent call last):
+Traceback (most recent call last):
+  File "train_l2.py", line 218, in <module>
+    main(args.config_file)
+  File "train_l2.py", line 218, in <module>
+    main(args.config_file)
+  File "train_l2.py", line 200, in main
+    loss_record, eval_record, violation_record, episode_record, pq_top_k = solver.learn(
+  File "train_l2.py", line 200, in main
+    loss_record, eval_record, violation_record, episode_record, pq_top_k = solver.learn(
+  File "/home/bb/Desktop/rl_final_project/base_training.py", line 138, in learn
+    obsrv_all = self.interact(rollout_env, obsrv_all, action_all)
+  File "/home/bb/Desktop/rl_final_project/base_training.py", line 138, in learn
+    obsrv_all = self.interact(rollout_env, obsrv_all, action_all)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 140, in interact
+    obsrv_nxt, r, done, info = rollout_env.step(action_all[0], cast_torch=True)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 140, in interact
+    obsrv_nxt, r, done, info = rollout_env.step(action_all[0], cast_torch=True)
+  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 72, in step
+    state_nxt, ctrl_clip, dstb_clip = self.agent.integrate_forward(
+  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 72, in step
+    state_nxt, ctrl_clip, dstb_clip = self.agent.integrate_forward(
+  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 123, in integrate_forward
+    return self.dyn.integrate_forward(
+  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 123, in integrate_forward
+    return self.dyn.integrate_forward(
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/spirit_dstb_dynamics_pybullet.py", line 315, in integrate_forward
+    if self.dstb_policy.obsrv_dim == 32:
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/spirit_dstb_dynamics_pybullet.py", line 315, in integrate_forward
+    if self.dstb_policy.obsrv_dim == 32:
+  File "/home/bb/miniconda3/envs/gameplay/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1729, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+  File "/home/bb/miniconda3/envs/gameplay/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1729, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+AttributeError: 'GaussianPolicy' object has no attribute 'obsrv_dim'
+AttributeError: 'GaussianPolicy' object has no attribute 'obsrv_dim'
+Traceback (most recent call last):
+  File "train_l2.py", line 218, in <module>
+    main(args.config_file)
+  File "train_l2.py", line 200, in main
+    loss_record, eval_record, violation_record, episode_record, pq_top_k = solver.learn(
+  File "/home/bb/Desktop/rl_final_project/base_training.py", line 138, in learn
+    obsrv_all = self.interact(rollout_env, obsrv_all, action_all)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 140, in interact
+    obsrv_nxt, r, done, info = rollout_env.step(action_all[0], cast_torch=True)
+  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 72, in step
+    state_nxt, ctrl_clip, dstb_clip = self.agent.integrate_forward(
+  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 123, in integrate_forward
+    return self.dyn.integrate_forward(
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/spirit_dstb_dynamics_pybullet.py", line 315, in integrate_forward
+    if self.dstb_policy.obsrv_dim == 32:
+  File "/home/bb/miniconda3/envs/gameplay/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1729, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+AttributeError: 'GaussianPolicy' object has no attribute 'obsrv_dim'
+Traceback (most recent call last):
+  File "train_l2.py", line 218, in <module>
+    main(args.config_file)
+  File "train_l2.py", line 200, in main
+    loss_record, eval_record, violation_record, episode_record, pq_top_k = solver.learn(
+  File "/home/bb/Desktop/rl_final_project/base_training.py", line 138, in learn
+    obsrv_all = self.interact(rollout_env, obsrv_all, action_all)
+  File "/home/bb/Desktop/rl_final_project/sac_br.py", line 140, in interact
+    obsrv_nxt, r, done, info = rollout_env.step(action_all[0], cast_torch=True)
+  File "/home/bb/Desktop/rl_final_project/simulators/base_zs_env.py", line 72, in step
+    state_nxt, ctrl_clip, dstb_clip = self.agent.integrate_forward(
+  File "/home/bb/Desktop/rl_final_project/simulators/agent.py", line 123, in integrate_forward
+    return self.dyn.integrate_forward(
+  File "/home/bb/Desktop/rl_final_project/simulators/dynamics/spirit_dstb_dynamics_pybullet.py", line 315, in integrate_forward
+    if self.dstb_policy.obsrv_dim == 32:
+  File "/home/bb/miniconda3/envs/gameplay/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1729, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+AttributeError: 'GaussianPolicy' object has no attribute 'obsrv_dim'
