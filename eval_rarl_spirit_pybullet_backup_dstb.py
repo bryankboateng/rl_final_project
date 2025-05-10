@@ -9,12 +9,12 @@
 import os
 import argparse
 from omegaconf import OmegaConf
-from agent import Actor, SACBestResponse
-from agent.sac import SAC
+from actors_and_critics import Actor
+from sac_br import SACBestResponse
+from sac import SAC
 from simulators import SpiritPybulletZeroSumEnv
 from simulators.spirit_rl.inverse_kinematics.inverse_kinematics_controller import InverseKinematicsController
-from utils.functions import load_solver
-from utils.utils import get_model_index
+from utils import get_model_index, load_solver
 import pybullet as p
 import torch
 

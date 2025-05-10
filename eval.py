@@ -10,13 +10,12 @@ import os
 import argparse
 import pickle
 from omegaconf import OmegaConf
-from agent import SACBestResponse
-from agent.base_block import Actor
-from agent.sac import SAC
+from actors_and_critics import Actor
+from sac_br import SACBestResponse
+from sac import SAC
 from simulators import SpiritPybulletZeroSumEnv
 from simulators.spirit_rl.inverse_kinematics.inverse_kinematics_controller import InverseKinematicsController
-from utils.functions import load_batch, load_solver
-from utils.utils import get_model_index, save_obj
+from utils import get_model_index, save_obj, load_solver, load_batch
 import pybullet as p
 import torch
 import pandas as pd

@@ -1,1 +1,0 @@
-{"eval/reach-avoid_ctrl": 1.0, "eval/reach-avoid_dstb": 1.0, "eval/ep_length_ctrl": 22.475, "eval/ep_length_dstb": 20.4, "eval/safety_ctrl": 1.0, "eval/safety_dstb": 1.0, "_timestamp": 1745030049.693135, "_runtime": 5.687983989715576, "_step": 0, "_wandb": {"runtime": 182}}

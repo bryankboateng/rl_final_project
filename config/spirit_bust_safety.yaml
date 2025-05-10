@@ -133,10 +133,10 @@ solver:
     net_name: ctrl
     actor_type: max
     step: 2_500_000
-    model_folder: /home/bb/Desktop/safe_adaptation_dev/train_result/isaacs_spirit/model
+    model_folder: train_result/isaacs_spirit/model
     ctrl_type: safety # safety, performance, shield_value, shield_rollout
     epsilon: -0.28
-    gameplay_config: /home/bb/Desktop/safe_adaptation_dev/train_result/isaacs_spirit/config.yaml
+    gameplay_config: train_result/isaacs_spirit/config.yaml
     gameplay_horizon: 300
   eval:   
     b4_learn: false
