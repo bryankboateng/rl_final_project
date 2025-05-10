@@ -42,13 +42,12 @@ class Humanoid:
     def __init__(self, client, height=1.5, orientation=None, env_type=None, payload_max=0, **kwargs):
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.client = client
-        robot_path = "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/resources/humanoid/humanoid.urdf"
+        robot_path = "/home/bb/Desktop/rl_final_project/simulators/dynamics/resources/humanoid/humanoid.urdf"
         self.id = p.loadURDF(robot_path, basePosition=[0, 0, 1], baseOrientation=p.getQuaternionFromEuler([1.57, 0, 0]), useFixedBase=False)
-
         self.type = "sim"
-        self.dim_x = kwargs.get("dim_x", 33)
-        self.action_type = kwargs.get("action_type", "increment")
-        self.center = kwargs.get("center", None)
+        self.dim_x = kwargs.get("dim_x", 17)
+        self.action_type = kwargs.get("action_type", "center_sampling")
+        self.center = kwargs.get("action_center", None)
         self.target_list = kwargs.get("target_list", [])
         self.safety_list = kwargs.get("safety_list", [])
 
@@ -64,9 +63,9 @@ class Humanoid:
         self.spherical_joints = [idx for idx in self.joint_index if p.getJointInfo(self.id, idx)[2] == p.JOINT_SPHERICAL and p.getJointInfo(self.id, idx)[1] in self.spherical_list]
         self.revolute_joints = [idx for idx in self.joint_index if p.getJointInfo(self.id, idx)[2] == p.JOINT_REVOLUTE]
         
-        print(f"[Humanoid] Loaded humanoid with ID {self.id}, controllable joints: {self.joint_index}")
-        print(f"[Humanoid] Spherical joints: {self.spherical_joints}")
-        print(f"[Humanoid] Revolute joints: {self.revolute_joints}")
+        # print(f"[Humanoid] Loaded humanoid with ID {self.id}, controllable joints: {self.joint_index}")
+        # print(f"[Humanoid] Spherical joints: {self.spherical_joints}")
+        # print(f"[Humanoid] Revolute joints: {self.revolute_joints}")
 
 
     def find_plane(self):
@@ -82,6 +81,7 @@ class Humanoid:
         - a list of revolute joint actions
         - a list of (roll, pitch, yaw) tuples for each spherical joint
         """
+ 
         assert len(full_action) == 19, f"Expected 16 elements, got {len(full_action)}"
         revolute = full_action[:4]
         spherical = [
@@ -125,9 +125,9 @@ class Humanoid:
                 if name == jname:
                     joint_list.append(i)
 
-        if len(joint_list) != 10:
-            print(f"[Humanoid] ⚠️ Joint list mismatch: expected 10, got {len(joint_list)}. List: {joint_list}")
-        print(f"[Humanoid] Joint list: {joint_list}")
+        # if len(joint_list) != 10:
+        #     print(f"[Humanoid] ⚠️ Joint list mismatch: expected 10, got {len(joint_list)}. List: {joint_list}")
+        # print(f"[Humanoid] Joint list: {joint_list}")
         return joint_list
 
 
@@ -156,8 +156,10 @@ class Humanoid:
         self._apply_joint_targets2(revolute_target, spherical_target, use_gains=False)
 
     def apply_position(self, position=None, default=False):
+        
         if default:
-            position = np.array(self.center)
+            position = np.array(self.center) if not isinstance(self.center, np.ndarray) else self.center
+            
         revolute_target, spherical_target = self.split_action(position)
         self.apply_position2(revolute_target, spherical_target)
 
@@ -239,6 +241,7 @@ class Humanoid:
         # === Joint positions ===
         joint_pos = self.get_joint_position()
 
+
         # Parse joint quaternions
         quat_right_hip = joint_pos[0:4]
         angle_right_knee = joint_pos[4] # Revolute joints can be descirbed with a single angle
@@ -305,8 +308,8 @@ class Humanoid:
         )
 
     def get_joint_position(self):
-        joint_pos, joint_vel, _, _ = self.get_joint_state()
-        return joint_pos, joint_vel
+        joint_pos, _, _, _ = self.get_joint_state()
+        return joint_pos
 
 
 
@@ -338,7 +341,7 @@ class Humanoid:
             #"abs_roll": 0.7 - abs(roll),
 
         return {
-            "pelvis_height": z_pos - 1.5,
+            "pelvis_height": z_pos - 0.6,
             "abs_pitch": 0.7 - abs(pitch),
             **joint_margins
         }
@@ -359,8 +362,8 @@ class Humanoid:
             "upright_pitch": 0.2 - abs(pitch),                           # within ±0.2 rad pitch
             "right_knee_neutral": 0.1 - abs(joint_dict["right_knee"]),  # close to 0.0
             "left_knee_neutral": 0.1 - abs(joint_dict["left_knee"]),
-            "right_elbow_neutral": 0.35 - abs(joint_dict["right_elbow"] - (np.pi/2)), # close to pi/2
-            "left_elbow_neutral": 0.35 - abs(joint_dict["left_elbow"] - (np.pi/2)), # close to pi/2
+            # "right_elbow_neutral": 0.35 - abs(joint_dict["right_elbow"] - (np.pi/2)), # close to pi/2
+            # "left_elbow_neutral": 0.35 - abs(joint_dict["left_elbow"] - (np.pi/2)), # close to pi/2
         }
 
 if __name__ == "__main__":

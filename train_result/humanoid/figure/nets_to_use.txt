@@ -1,0 +1,320 @@
+[Eval] Running evaluation at step 300000
+  => Saves central at train_result/humanoid/model/central.
+[[1.   1.   1.   1.    nan  nan  nan  nan  nan  nan  nan 1.  ]
+ [1.   1.   1.   1.    nan  nan  nan  nan  nan  nan  nan 1.  ]
+ [0.3  0.3  0.2  0.3   nan  nan  nan  nan  nan  nan  nan 0.35]
+ [1.   1.   1.   1.    nan  nan  nan  nan  nan  nan  nan 1.  ]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]]
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 310000 | Update Controller: False
+[Update] Step 320000 | Update Controller: True
+[Update] Step 330000 | Update Controller: False
+[Update] Step 340000 | Update Controller: True
+[Update] Step 350000 | Update Controller: False
+[Update] Step 360000 | Update Controller: True
+[Update] Step 370000 | Update Controller: False
+[Update] Step 380000 | Update Controller: True
+[Update] Step 390000 | Update Controller: False
+[Update] Step 400000 | Update Controller: True
+
+[Eval] Running evaluation at step 400000
+  => Saves central at train_result/humanoid/model/central.
+[[1.   1.   1.   1.   1.    nan  nan  nan  nan  nan  nan 1.  ]
+ [1.   1.   1.   1.   1.    nan  nan  nan  nan  nan  nan 1.  ]
+ [0.3  0.3  0.2  0.3  0.3   nan  nan  nan  nan  nan  nan 0.35]
+ [1.   1.   1.   1.   0.35  nan  nan  nan  nan  nan  nan 1.  ]
+ [0.35 0.15 0.35 0.35 0.25  nan  nan  nan  nan  nan  nan 0.2 ]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]]
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 410000 | Update Controller: False
+[Update] Step 420000 | Update Controller: True
+[Update] Step 430000 | Update Controller: False
+[Update] Step 440000 | Update Controller: True
+[Update] Step 450000 | Update Controller: False
+[Update] Step 460000 | Update Controller: True
+[Update] Step 470000 | Update Controller: False
+[Update] Step 480000 | Update Controller: True
+[Update] Step 490000 | Update Controller: False
+[Update] Step 500000 | Update Controller: True
+
+[Eval] Running evaluation at step 500000
+  => Saves central at train_result/humanoid/model/central.
+[[1.   1.   1.   1.   1.   1.    nan  nan  nan  nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.    nan  nan  nan  nan  nan 1.  ]
+ [0.3  0.3  0.2  0.3  0.3  0.3   nan  nan  nan  nan  nan 0.35]
+ [1.   1.   1.   1.   0.35 0.55  nan  nan  nan  nan  nan 1.  ]
+ [0.35 0.15 0.35 0.35 0.25 0.35  nan  nan  nan  nan  nan 0.2 ]
+ [1.   1.   1.   1.   1.   1.    nan  nan  nan  nan  nan 1.  ]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]]
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 510000 | Update Controller: False
+[Update] Step 520000 | Update Controller: True
+[Update] Step 530000 | Update Controller: False
+[Update] Step 540000 | Update Controller: True
+[Update] Step 550000 | Update Controller: False
+[Update] Step 560000 | Update Controller: True
+[Update] Step 570000 | Update Controller: False
+[Update] Step 580000 | Update Controller: True
+[Update] Step 590000 | Update Controller: False
+[Update] Step 600000 | Update Controller: True
+
+[Eval] Running evaluation at step 600000
+  => Saves central at train_result/humanoid/model/central.
+[[1.   1.   1.   1.   1.   1.   0.95  nan  nan  nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.    nan  nan  nan  nan 1.  ]
+ [0.3  0.3  0.2  0.3  0.3  0.3  0.3   nan  nan  nan  nan 0.35]
+ [1.   1.   1.   1.   0.35 0.55 0.7   nan  nan  nan  nan 1.  ]
+ [0.35 0.15 0.35 0.35 0.25 0.35 0.45  nan  nan  nan  nan 0.2 ]
+ [1.   1.   1.   1.   1.   1.   0.85  nan  nan  nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.    nan  nan  nan  nan 1.  ]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]]
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 610000 | Update Controller: False
+[Update] Step 620000 | Update Controller: True
+[Update] Step 630000 | Update Controller: False
+[Update] Step 640000 | Update Controller: True
+[Update] Step 650000 | Update Controller: False
+[Update] Step 660000 | Update Controller: True
+[Update] Step 670000 | Update Controller: False
+[Update] Step 680000 | Update Controller: True
+[Update] Step 690000 | Update Controller: False
+[Update] Step 700000 | Update Controller: True
+
+[Eval] Running evaluation at step 700000
+  => Saves central at train_result/humanoid/model/central.
+[[1.   1.   1.   1.   1.   1.   0.95 0.95  nan  nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.    nan  nan  nan 1.  ]
+ [0.3  0.3  0.2  0.3  0.3  0.3  0.3  0.3   nan  nan  nan 0.35]
+ [1.   1.   1.   1.   0.35 0.55 0.7  0.1   nan  nan  nan 1.  ]
+ [0.35 0.15 0.35 0.35 0.25 0.35 0.45 0.35  nan  nan  nan 0.2 ]
+ [1.   1.   1.   1.   1.   1.   0.85 1.    nan  nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.    nan  nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.    nan  nan  nan 1.  ]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]]
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 710000 | Update Controller: False
+[Update] Step 720000 | Update Controller: True
+[Update] Step 730000 | Update Controller: False
+[Update] Step 740000 | Update Controller: True
+[Update] Step 750000 | Update Controller: False
+[Update] Step 760000 | Update Controller: True
+[Update] Step 770000 | Update Controller: False
+[Update] Step 780000 | Update Controller: True
+[Update] Step 790000 | Update Controller: False
+[Update] Step 800000 | Update Controller: True
+
+[Eval] Running evaluation at step 800000
+  => Saves central at train_result/humanoid/model/central.
+[[1.   1.   1.   1.   1.   1.   0.95 0.95 1.    nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.    nan  nan 1.  ]
+ [0.3  0.3  0.2  0.3  0.3  0.3  0.3  0.3  0.3   nan  nan 0.35]
+ [1.   1.   1.   1.   0.35 0.55 0.7  0.1  0.5   nan  nan 1.  ]
+ [0.35 0.15 0.35 0.35 0.25 0.35 0.45 0.35 0.35  nan  nan 0.2 ]
+ [1.   1.   1.   1.   1.   1.   0.85 1.   1.    nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.    nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.    nan  nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.    nan  nan 1.  ]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]]
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 810000 | Update Controller: False
+[Update] Step 820000 | Update Controller: True
+[Update] Step 830000 | Update Controller: False
+[Update] Step 840000 | Update Controller: True
+[Update] Step 850000 | Update Controller: False
+[Update] Step 860000 | Update Controller: True
+[Update] Step 870000 | Update Controller: False
+[Update] Step 880000 | Update Controller: True
+[Update] Step 890000 | Update Controller: False
+[Update] Step 900000 | Update Controller: True
+
+[Eval] Running evaluation at step 900000
+  => Saves central at train_result/humanoid/model/central.
+[[1.   1.   1.   1.   1.   1.   0.95 0.95 1.   1.    nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.    nan 1.  ]
+ [0.3  0.3  0.2  0.3  0.3  0.3  0.3  0.3  0.3  0.25  nan 0.35]
+ [1.   1.   1.   1.   0.35 0.55 0.7  0.1  0.5  0.9   nan 1.  ]
+ [0.35 0.15 0.35 0.35 0.25 0.35 0.45 0.35 0.35 0.35  nan 0.2 ]
+ [1.   1.   1.   1.   1.   1.   0.85 1.   1.   1.    nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.    nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.    nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.    nan 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.    nan 1.  ]
+ [ nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan  nan]]
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 910000 | Update Controller: False
+[Update] Step 920000 | Update Controller: True
+[Update] Step 930000 | Update Controller: False
+[Update] Step 940000 | Update Controller: True
+[Update] Step 950000 | Update Controller: False
+[Update] Step 960000 | Update Controller: True
+[Update] Step 970000 | Update Controller: False
+[Update] Step 980000 | Update Controller: True
+[Update] Step 990000 | Update Controller: False
+[Update] Step 1000000 | Update Controller: True
+
+[Eval] Running evaluation at step 1000000
+  => Saves central at train_result/humanoid/model/central.
+[[1.   1.   1.   1.   1.   1.   0.95 0.95 1.   1.   0.85 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [0.3  0.3  0.2  0.3  0.3  0.3  0.3  0.3  0.3  0.25 0.3  0.35]
+ [1.   1.   1.   1.   0.35 0.55 0.7  0.1  0.5  0.9  0.2  1.  ]
+ [0.35 0.15 0.35 0.35 0.25 0.35 0.45 0.35 0.35 0.35 0.4  0.2 ]
+ [1.   1.   1.   1.   1.   1.   0.85 1.   1.   1.   0.95 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]]
+ctrl results [0.979 1.    0.292 0.692 0.325 0.983 1.    1.    1.    1.    1.   ]
+Saving current ctrl by removing 2
+  => Removes ctrl at train_result/humanoid/model/ctrl/ctrl-200000.pth.
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+dstb results [0.941 0.923 0.941 0.941 0.873 0.9   0.905 0.855 0.895 0.932 0.855]
+Saving current dstb by removin 0
+  => Removes dstb at train_result/humanoid/model/dstb/dstb-0.pth.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 1010000 | Update Controller: False
+[Update] Step 1020000 | Update Controller: True
+[Update] Step 1030000 | Update Controller: False
+[Update] Step 1040000 | Update Controller: True
+[Update] Step 1050000 | Update Controller: False
+[Update] Step 1060000 | Update Controller: True
+[Update] Step 1070000 | Update Controller: False
+[Update] Step 1080000 | Update Controller: True
+[Update] Step 1090000 | Update Controller: False
+[Update] Step 1100000 | Update Controller: True
+
+[Eval] Running evaluation at step 1100000
+  => Saves central at train_result/humanoid/model/central.
+[[0.85 1.   1.   1.   1.   1.   0.95 0.95 1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [0.2  1.   1.   1.   0.35 0.55 0.7  0.1  0.5  0.9  1.   1.  ]
+ [0.4  0.15 0.35 0.35 0.25 0.35 0.45 0.35 0.35 0.35 0.45 0.2 ]
+ [0.95 1.   1.   1.   1.   1.   0.85 1.   1.   1.   0.85 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]]
+ctrl results [0.979 1.    1.    0.692 0.333 0.971 1.    1.    1.    1.    1.   ]
+Saving current ctrl by removing 4
+  => Removes ctrl at train_result/humanoid/model/ctrl/ctrl-400000.pth.
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+dstb results [0.909 1.    1.    1.    0.941 0.959 0.955 0.914 0.955 0.991 0.986]
+Saving current dstb by removin 1
+  => Removes dstb at train_result/humanoid/model/dstb/dstb-100000.pth.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 1110000 | Update Controller: False
+[Update] Step 1120000 | Update Controller: True
+[Update] Step 1130000 | Update Controller: False
+[Update] Step 1140000 | Update Controller: True
+[Update] Step 1150000 | Update Controller: False
+[Update] Step 1160000 | Update Controller: True
+[Update] Step 1170000 | Update Controller: False
+[Update] Step 1180000 | Update Controller: True
+[Update] Step 1190000 | Update Controller: False
+[Update] Step 1200000 | Update Controller: True
+
+[Eval] Running evaluation at step 1200000
+  => Saves central at train_result/humanoid/model/central.
+[[0.85 1.   1.   1.   1.   1.   0.95 0.95 1.   1.   0.95 1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [0.2  1.   1.   1.   0.35 0.55 0.7  0.1  0.5  0.9  0.2  1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   0.95 1.  ]
+ [0.95 0.85 1.   1.   1.   1.   0.85 1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]]
+ctrl results [0.975 1.    1.    0.625 0.996 0.971 1.    1.    1.    1.    1.   ]
+Saving current ctrl by removing 3
+  => Removes ctrl at train_result/humanoid/model/ctrl/ctrl-300000.pth.
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+dstb results [0.982 0.986 1.    1.    1.    1.    0.982 0.995 1.    1.    0.991]
+Saving current dstb by removin 2
+  => Removes dstb at train_result/humanoid/model/dstb/dstb-200000.pth.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+[Update] Step 1210000 | Update Controller: False
+[Update] Step 1220000 | Update Controller: True
+[Update] Step 1230000 | Update Controller: False
+[Update] Step 1240000 | Update Controller: True
+[Update] Step 1250000 | Update Controller: False
+[Update] Step 1260000 | Update Controller: True
+[Update] Step 1270000 | Update Controller: False
+[Update] Step 1280000 | Update Controller: True
+[Update] Step 1290000 | Update Controller: False
+[Update] Step 1300000 | Update Controller: True
+
+[Eval] Running evaluation at step 1300000
+  => Saves central at train_result/humanoid/model/central.
+[[0.85 1.   0.95 1.   1.   1.   0.95 0.95 1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   0.95 1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [0.95 0.85 1.   1.   1.   1.   0.85 1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]
+ [1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.   1.  ]]
+ctrl results [0.975 1.    1.    1.    0.996 0.971 1.    1.    1.    1.    1.   ]
+Saving current ctrl by removing 5
+  => Removes ctrl at train_result/humanoid/model/ctrl/ctrl-500000.pth.
+  => Saves ctrl at train_result/humanoid/model/ctrl.
+dstb results [0.986 1.    0.991 1.    1.    1.    0.995 0.995 1.    1.    1.   ]
+Saving current dstb by removin 1
+  => Removes dstb at train_result/humanoid/model/dstb/dstb-1100000.pth.
+  => Saves dstb at train_result/humanoid/model/dstb.
+
+^CTraceback (most recent call last):
+  File "train_isaacs.py", line 130, in <module>
+    main(args.config_file)
+  File "train_isaacs.py", line 112, in main
+    loss_record, eval_record, violation_record, episode_record, leaderboard = solver.learn(
+  File "/home/bb/Desktop/rl_final_project/base_training.py", line 141, in learn
+    self.update()
+  File "/home/bb/Desktop/rl_final_project/ISAACS.py", line 330, in update
+    if self.cnt_step < self.min_steps_b4_opt or self.cnt_opt_period < self.opt_period:
+KeyboardInterrupt

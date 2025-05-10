@@ -49,11 +49,19 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
         self.reset_count = 0
         self.dstb_array = []
 
+        
+
         self.rendered_img = None
         self.state = None
         self.cnt = 0
 
-        self.reset()
+        kwargs = {
+            "action_center": self.action_center,
+            "action_type": self.action_type,
+            "dim_x": self.dim_x
+        }
+
+        self.reset(**kwargs)
 
     def reset(self, **kwargs):
         self.reset_count = (self.reset_count + 1) % 2 if self.synthetic_symmetrical_dstb else 0
@@ -84,13 +92,14 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
             p.resetBasePositionAndOrientation(self.robot.id, [0, 0, height], rotation, physicsClientId=self.client)
 
             # === Drop Pose ===
-            self.robot.apply_position(default=True) #defaults to basic drop pose
+            self.robot.apply_position(np.zeros(19)) #defaults to basic drop pose
             p.setGravity(0, 0, self.gravity * 0.2, physicsClientId=self.client)
             for _ in range(100):
                 p.stepSimulation(physicsClientId=self.client)
             p.setGravity(0, 0, self.gravity, physicsClientId=self.client)
 
             # === Apply initial action ===
+
             self.robot.apply_action(initial_action)
 
             # === Build initial observation ===
@@ -183,6 +192,8 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
             assert len(self.obs_sequence) == self.obs_sequence_length
 
         # === Apply control directly ===
+        # print("ctrl", control)
+        # print("adv", adversary)
         self.robot.apply_action(control)
 
         # === Adversarial force application ===
@@ -244,34 +255,75 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
             return self.state, control
 
 
+    # def render(self):
+    #     if self.rendered_img is None:
+    #         self.rendered_img = plt.imshow(np.zeros((200, 200, 4)))
+
+    #     # Base information
+    #     robot_id, client_id = self.robot.get_ids()
+    #     proj_matrix = p.computeProjectionMatrixFOV(fov=80, aspect=1, nearVal=0.01, farVal=100, physicsClientId=self.client)
+    #     pos, ori = [list(l) for l in p.getBasePositionAndOrientation(robot_id, client_id)]
+
+    #     pos[0] += 1.0
+    #     pos[1] -= 1.0
+    #     pos[2] += 0.7
+    #     ori = p.getQuaternionFromEuler([0, 0.2, np.pi * 0.8])
+
+    #     # Rotate camera direction
+    #     rot_mat = np.array(p.getMatrixFromQuaternion(ori)).reshape(3, 3)
+    #     camera_vec = np.matmul(rot_mat, [1, 0, 0])
+    #     up_vec = np.matmul(rot_mat, np.array([0, 0, 1]))
+    #     view_matrix = p.computeViewMatrix(pos, pos + camera_vec, up_vec)
+
+    #     # Display image
+    #     frame = p.getCameraImage(200, 200, view_matrix, proj_matrix, physicsClientId=self.client)[2]
+    #     frame = np.reshape(frame, (200, 200, 4))
+    #     self.rendered_img.set_data(frame)
+    #     plt.draw()
+    #     plt.axis('off')
+    #     plt.title("Rollout imagine env")
+    #     plt.pause(.00001)
+
     def render(self):
+        print("rendering")
         if self.rendered_img is None:
-            self.rendered_img = plt.imshow(np.zeros((200, 200, 4)))
+            self.rendered_img = plt.imshow(np.zeros((680, 400, 4)))
 
-        # Base information
         robot_id, client_id = self.robot.get_ids()
-        proj_matrix = p.computeProjectionMatrixFOV(fov=80, aspect=1, nearVal=0.01, farVal=100, physicsClientId=self.client)
-        pos, ori = [list(l) for l in p.getBasePositionAndOrientation(robot_id, client_id)]
 
-        pos[0] += 1.0
-        pos[1] -= 1.0
-        pos[2] += 0.7
-        ori = p.getQuaternionFromEuler([0, 0.2, np.pi * 0.8])
+        # === Match resetDebugVisualizerCamera view ===
+        cam_target = [0, 0, 1.5]
+        cam_distance = 100
+        cam_yaw = 45
+        cam_pitch = -25
+        cam_roll = 0
 
-        # Rotate camera direction
-        rot_mat = np.array(p.getMatrixFromQuaternion(ori)).reshape(3, 3)
-        camera_vec = np.matmul(rot_mat, [1, 0, 0])
-        up_vec = np.matmul(rot_mat, np.array([0, 0, 1]))
-        view_matrix = p.computeViewMatrix(pos, pos + camera_vec, up_vec)
+        view_matrix = p.computeViewMatrixFromYawPitchRoll(
+            cameraTargetPosition=cam_target,
+            distance=cam_distance,
+            yaw=cam_yaw,
+            pitch=cam_pitch,
+            roll=cam_roll,
+            upAxisIndex=2,
+            physicsClientId=self.client
+        )
 
-        # Display image
-        frame = p.getCameraImage(200, 200, view_matrix, proj_matrix, physicsClientId=self.client)[2]
-        frame = np.reshape(frame, (200, 200, 4))
+        proj_matrix = p.computeProjectionMatrixFOV(
+            fov=10, aspect=1.0, nearVal=0.01, farVal=100,
+            physicsClientId=self.client
+        )
+
+        # === Capture image ===
+        frame = p.getCameraImage(680, 400, view_matrix, proj_matrix, physicsClientId=self.client)[2]
+        frame = np.reshape(frame, (680, 400, 4))
+
+        # === Display ===
         self.rendered_img.set_data(frame)
-        plt.draw()
         plt.axis('off')
         plt.title("Rollout imagine env")
-        plt.pause(.00001)
+        plt.pause(0.00001)
+
+
 
     def get_constraints(self):
         return self.robot.safety_margin()

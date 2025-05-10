@@ -19,7 +19,7 @@ class pybulletDebug:
     # on the robot)
     self.cyaw = 45
     self.cpitch = -20
-    self.cdist = 1
+    self.cdist = 10
 
     # self.cyaw = 92
     # self.cpitch = -11

@@ -13,7 +13,7 @@ agent:
   dt: 0.02
   apply_force: false
   replace_adv_with_dr: false
-  force: 10
+  force: 1.0
   force_scale: 1.0
   force_reset_time: 50
   force_info:
@@ -219,7 +219,7 @@ arch:
     append_dim: 0
     latent_dim: 0
     obsrv_dim: 17
-    action_dim: 24
+    action_dim: 19
     action_range: *ctrl_range
     pretrained_path:
   actor_1:
@@ -243,7 +243,7 @@ arch:
     append_dim: 0
     latent_dim: 0
     obsrv_dim: 17
-    action_dim: 30 # 24 + 6
+    action_dim: 25 # 19 + 6
     pretrained_path:
 
 eval:

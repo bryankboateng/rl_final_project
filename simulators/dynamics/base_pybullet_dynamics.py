@@ -59,7 +59,7 @@ class BasePybulletDynamics(BaseDynamics):
     # initialize a pybullet client (GUI/DIRECT)
     if self.gui:
       # Setup the GUI (disable the useless windows)
-      self.camera_info = {'camera': {'distance': 12, 'yaw': -0, 'pitch': -89}, 'lookat': [0, 0, 0]}
+      self.camera_info = {'camera': {'distance': 50, 'yaw': -0, 'pitch': -89}, 'lookat': [0, 0, 0]}
       self._render_width = 640
       self._render_height = 480
       self.client = p.connect(p.GUI)
@@ -69,7 +69,7 @@ class BasePybulletDynamics(BaseDynamics):
       p.configureDebugVisualizer(p.COV_ENABLE_RGB_BUFFER_PREVIEW, 0)
       # p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
       p.resetDebugVisualizerCamera(
-          cameraDistance=1, cameraYaw=20, cameraPitch=-20, cameraTargetPosition=[1, -0.5, 0.8],
+          cameraDistance=50, cameraYaw=20, cameraPitch=-20, cameraTargetPosition=[1, -0.5, 0.8],
           physicsClientId=self.client
       )
       self.debugger = pybulletDebug(self.client)
