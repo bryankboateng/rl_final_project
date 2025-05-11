@@ -25,6 +25,7 @@ def get_bellman_update(
     Returns:
         y: tensor of shape (batch_size,) containing the Bellman target
     """
+    
     target_q = torch.min(q1_nxt, q2_nxt).view(-1)
     y = torch.zeros(batch_size).float().to(q1_nxt) 
     final_mask = ~non_final_mask
