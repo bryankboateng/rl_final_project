@@ -563,6 +563,11 @@ class Actor(BaseBlock, BasePolicy):
 
 
     def build_optimizer(self, cfg):
+        """
+        Initializes the optimizer for both policy network parameters and alpha entropy tuning.
+        Sets up target entropy, alpha learning, and optional learning rate scheduling.
+        """
+
         super().build_optimizer(cfg)
 
         self.init_alpha = torch.log(torch.FloatTensor([cfg.alpha])).to(self.device)
@@ -589,6 +594,11 @@ class Actor(BaseBlock, BasePolicy):
 
 
     def update_hyper_param(self):
+        """
+        Updates hyperparameters during training.
+        Handles alpha learning rate decay schedule if enabled.
+        """
+
         if not self.eval:
          super().update_hyper_param()
 
@@ -602,6 +612,11 @@ class Actor(BaseBlock, BasePolicy):
 
 
     def reset_alpha(self):
+        """
+        Resets entropy coefficient alpha to its initial value.
+        Reinitializes optimizer and scheduler if alpha learning and scheduling are enabled.
+        """
+
         self.log_alpha = self.init_alpha.detach().clone()
         if self.learn_alpha:
             self.log_alpha.requires_grad = True
@@ -812,6 +827,11 @@ class Critic(BaseBlock):
 
 
     def build_optimizer(self, cfg):
+        """
+        Initializes optimizer settings, including terminal condition type, soft update rate (tau), and discount factor (gamma).
+        Also sets up learning rate scheduling if specified in the config.
+        """
+
         super().build_optimizer(cfg)
         self.terminal_type: str = cfg.terminal_type
         self.tau = float(cfg.tau)

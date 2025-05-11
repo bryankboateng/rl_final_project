@@ -49,12 +49,13 @@ class ISAACSTrainer(BaseTraining):
 
         self.save_top_k_ctrl = int(cfg_solver.save_top_k.ctrl)
         self.save_top_k_dstb = int(cfg_solver.save_top_k.dstb)
+
         # Always keeps the dummy dstb (no dstb) and has placeholder for the current
         self.aux_metric = cfg_solver.eval.aux_metric
         self.leaderboard = np.full(
             shape=(self.save_top_k_ctrl + 1, self.save_top_k_dstb + 2, 1 + len(self.aux_metric)), dtype=float,
             fill_value=None
-    )
+        )
 
         # Checkpoint lists (step numbers)
         self.ctrl_ckpts = []
@@ -78,7 +79,8 @@ class ISAACSTrainer(BaseTraining):
 
         # Leaderboard: shape (K_ctrl + 1, K_dstb + 2, metrics)
         self.leaderboard = np.nan * np.ones((self.save_top_k_ctrl + 1, self.save_top_k_dstb + 2, 3))
-        
+
+
     def combine_action(self, ctrl_action: torch.Tensor, dstb_action: torch.Tensor) -> torch.Tensor:
         """
         Combines control and disturbance actions into a single tensor.
@@ -92,6 +94,7 @@ class ISAACSTrainer(BaseTraining):
         """
 
         return torch.cat([ctrl_action, dstb_action], dim=-1)
+
 
     def get_dstb_sampler(self) -> RandomPolicy:
         """
@@ -167,7 +170,18 @@ class ISAACSTrainer(BaseTraining):
     def interact(
         self, rollout_env: Union[BaseZeroSumEnv, VecEnvBase], obsrv_all: torch.Tensor, action_all: List[Dict[str,
                                                                                                             np.ndarray]]
-    ):
+        ):
+        """
+        Executes one interaction step in the environment(s), stores transitions, and resets environment(s) if done. Tracks safety violations.
+
+        Args:
+            rollout_env: The environment to interact with.
+            ovsrv_all: Current observation tensor for all environments.
+            action_all: List of action dictionaries for each environment.
+        
+        Returns:
+            obsrv_nxt_all: Next observation tensor for all environments.
+        """
 
         if self.num_envs == 1:
             obsrv_nxt, r, done, info = rollout_env.step(action_all[0], cast_torch=True)
@@ -329,7 +343,14 @@ class ISAACSTrainer(BaseTraining):
             loss_dstb, loss_ent_dstb, loss_alpha_dstb
         )
 
+
     def update(self):
+        """
+        Performs a joint update of the critic and (optionally) the controller and disturbance agents.
+        Alternates between updating the controller and disturbance policies based on a set ratio.
+        Tracks and logs various losses (Q-function, policy, entropy, alpha) and stores statistics.
+        """
+
         # Check whether it's time to run an update cycle
         if self.cnt_step < self.min_steps_b4_opt or self.cnt_opt_period < self.opt_period:
             return  # Not enough steps yet
@@ -433,6 +454,7 @@ class ISAACSTrainer(BaseTraining):
             rollout_env (BaseZeroSumEnv): Environment used for rollouts.
             ctrl_ckpt_step (int): The checkpoint step of the controller.
         """
+
         # Load latest controller policy
         if ctrl_ckpt_step == self.cnt_step:
             self.ctrl_eval.update_policy(self.ctrl)
@@ -445,14 +467,19 @@ class ISAACSTrainer(BaseTraining):
 
 
     def update_leaderboard(self, eval_results: dict, ctrl_idx: int, dstb_idx: int):
-        """Updates leaderboard.
         """
+        Updates leaderboard with evaluation results for a specific (controller, disturbance) pair.
+        """
+
         self.leaderboard[ctrl_idx, dstb_idx, 0] = eval_results[self.eval_metric]
         for metric_idx, aux_metric_name in enumerate(self.aux_metric):
             self.leaderboard[ctrl_idx, dstb_idx, 1 + metric_idx] = eval_results[aux_metric_name]
 
 
     def update_dstb_agent(self, dstb_ckpt_step: int):
+        """
+        Updates evaluation disturbance agent.
+        """
         if dstb_ckpt_step == self.cnt_step:
             self.dstb_eval.update_policy(self.dstb)
         else:
@@ -460,12 +487,18 @@ class ISAACSTrainer(BaseTraining):
 
 
     def prune_leaderboard(self):
-        self.critic.save(self.cnt_step, self.model_folder) # Always saves critic checkpoints
+        """
+        Prunes the leaderboard by maintaining the top K controller and disturbance checkpoints.
+        """
+
+        # Always save critic checkpoints
+        self.critic.save(self.cnt_step, self.model_folder)
+
         with np.printoptions(precision=3, suppress=False):
             print(self.leaderboard[..., 0])
         if len(self.ctrl_ckpts) == self.save_top_k_ctrl:
             ctrl_avg_metric = np.nanmean(self.leaderboard[..., 0], axis=1)
-            ctrl_idx = np.argmin(ctrl_avg_metric)  # Removes the ctrl ckpt that has the minimum average metric
+            ctrl_idx = np.argmin(ctrl_avg_metric) # Removes the ctrl ckpt that has the minimum average metric
             with np.printoptions(precision=3, suppress=False):
                 print("ctrl results", ctrl_avg_metric)
             if ctrl_idx != self.save_top_k_ctrl:
@@ -481,7 +514,7 @@ class ISAACSTrainer(BaseTraining):
 
         if len(self.dstb_ckpts) == self.save_top_k_dstb:
             dstb_avg_metric = np.nanmean(self.leaderboard[:, :-1, 0], axis=0)
-            dstb_idx = np.argmax(dstb_avg_metric)  # Removes the dstb ckpt that has the maximum average metric
+            dstb_idx = np.argmax(dstb_avg_metric) # Removes the dstb ckpt that has the maximum average metric
             with np.printoptions(precision=3, suppress=False):
                 print("dstb results", dstb_avg_metric)
             if dstb_idx != self.save_top_k_dstb:
@@ -497,6 +530,10 @@ class ISAACSTrainer(BaseTraining):
     
     
     def update_hyper_param(self):
+        """
+        Updates the hyperparameters of the controller, disturbance agent, and critic.
+        """
+
         self.ctrl.update_hyper_param() # lr_pi, lr_alpha
         self.dstb.update_hyper_param() # lr_pi, lr_alpha
         flag_rst_alpha = self.critic.update_hyper_param() # lr_q, gamma
@@ -513,7 +550,7 @@ class ISAACSTrainer(BaseTraining):
         init_eval: bool = False
     ) -> bool:
         """
-        Evaluate the current policies against saved checkpoints and log leaderboard metrics.
+        Evaluates the current policies against saved checkpoints and log leaderboard metrics.
 
         Returns:
             bool: True if evaluation was performed, False otherwise.
@@ -577,12 +614,30 @@ class ISAACSTrainer(BaseTraining):
 
         return True
 
+
     def save(self, max_model: Optional[int] = None):
+        """
+        Saves the current controller, disturbance, and critic models.
+        """
+
         self.ctrl.save(self.cnt_step, self.model_folder, max_model)
         self.dstb.save(self.cnt_step, self.model_folder, max_model)
         self.critic.save(self.cnt_step, self.model_folder, max_model)
 
+
     def value(self, obsrv: np.ndarray, append: Optional[np.ndarray] = None) -> np.ndarray:
+        """
+        Computes the critic's value estimate for the current observation and action.
+        
+        Combines control and disturbance actions into a single tensor and passes it to the critic.
+        Args:
+            obsrv: Current observation array.
+            append: Optional additional information appended to the critic.
+        
+        Returns:
+            Critic's value estimate for the current observation and action.
+        """
+
         obsrv_tensor = torch.FloatTensor(obsrv).to(self.device)
         with torch.no_grad():
             ctrl_action = self.ctrl.net(obsrv_tensor)
@@ -590,6 +645,11 @@ class ISAACSTrainer(BaseTraining):
         action = self.combine_action(ctrl_action, dstb_action)
         return self.critic.value(obsrv_tensor, action, append=append)
 
+
     def init_learn(self, env: BaseEnv) -> Union[BaseEnv, VecEnvBase]:
+        """
+        Initializes the learning process and resets internal counters.
+        """
+
         self.cnt_dstb_updates = 0
         return super().init_learn(env)
