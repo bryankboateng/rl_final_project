@@ -52,9 +52,7 @@ def save_model(model: torch.nn.Module, step: int, model_folder: str, types: str,
   model_path = os.path.join(model_folder, '{}-{}.pth'.format(types, step))
   torch.save(model.state_dict(), model_path)
 
-
-
-# required by train_isaac
+# Required by train_isaac
 def evaluate_zero_sum(
     env: BaseZeroSumEnv, rollout_env: Union[BaseZeroSumEnv, VecEnvBase],
     adversary: Callable[[np.ndarray, np.ndarray, Any],
@@ -106,6 +104,7 @@ def get_model_index(parent_dir, model_type, step: Optional[int] = None, type="me
   Returns:
       _type_: _description_
   """
+
   print("WARNING: using model index stored in {}".format(type))
   model_dir = os.path.join(parent_dir, "model", type)
   print(model_dir)
@@ -119,7 +118,7 @@ def get_model_index(parent_dir, model_type, step: Optional[int] = None, type="me
     chosen_run_iter = highest_number
 
   elif model_type == "safest" or model_type == "worst":
-    # get the run with the best result from train.pkl
+    # Get the run with the best result from train.pkl
     train_log_path = os.path.join(parent_dir, "train.pkl")
     with open(train_log_path, "rb") as log:
       train_log = pickle.load(log)
@@ -162,6 +161,7 @@ def combine_action( ctrl_action: torch.Tensor, dstb_action: torch.Tensor) -> tor
     Returns:
         Combined action tensor.
     """
+
     return torch.cat([ctrl_action, dstb_action], dim=-1)
 
 class _scheduler(object):
@@ -173,17 +173,26 @@ class _scheduler(object):
     self.step()
 
   def step(self):
-    """Increments counter and updates variable value."""
+    """
+    Increments counter and updates variable value.
+    """
+
     self.cnt += 1
     value = self.get_value()
     self.variable = value
 
   def get_value(self):
-    """Defines how the scheduled value changes over time. To be overridden by subclasses."""
+    """
+    Defines how the scheduled value changes over time. To be overridden by subclasses.
+    """
+
     raise NotImplementedError
 
   def get_variable(self) -> float:
-    """Returns the current scheduled variable value."""
+    """
+    Returns the current scheduled variable value.
+    """
+
     return self.variable
 
 
@@ -201,6 +210,7 @@ class StepLRMargin(_scheduler):
       end_value (float or None): Maximum change limit.
       threshold (int): Delay before applying decay.
   """
+  
   def __init__(
       self, init_value, period, goal_value, decay=0.1, end_value=None, last_epoch=-1, threshold=0, verbose=False
   ):

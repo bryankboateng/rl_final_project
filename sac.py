@@ -6,7 +6,8 @@
 # Licensed under The MIT License [see LICENSE for details]
 # --------------------------------------------------------
 
-"""A class for basic soft actor-critic.
+"""
+A class for basic soft actor-critic.
 """
 
 from typing import Optional, Union, Tuple
@@ -64,22 +65,22 @@ class SAC(BaseTraining):
     return action_all
 
   def interact(self, rollout_env: Union[BaseEnv, VecEnvBase], obsrv_all: torch.Tensor, action_all: np.ndarray):
-    # TODO: better compatiability with single rollout env.
-    # * Here, we overload variables with outputs from a single env.
-    
-    #Somewhere down the line must assert/verify that len(action_all) = num_envs
+    # Better compatiability with single rollout env.
+    # Here, we overload variables with outputs from a single env.
+    # Somewhere down the line must assert/verify that len(action_all) = num_envs
+
     if self.num_envs == 1:
       obsrv_nxt, r, done, info = rollout_env.step(action_all[0], cast_torch=True)
-      obsrv_nxt_all = obsrv_nxt[None] #None is basically unsquueze(0)
+      obsrv_nxt_all = obsrv_nxt[None] # None is basically unsquueze(0)
       r_all = np.array([r])
       done_all = np.array([done])
       info_all = np.array([info])
     else:
-      obsrv_nxt_all, r_all, done_all, info_all = rollout_env.step(action_all) #How do we ensure that num_remotes matches num_actions
+      obsrv_nxt_all, r_all, done_all, info_all = rollout_env.step(action_all)
 
     for env_idx, (done, info) in enumerate(zip(done_all, info_all)):
       # Stores the transition in memory. Note that `obsrv` and `action` are cpu tensors.
-      # doubles brackets for ind preserves dim after index, action is a dict
+      # Doubles brackets for ind preserves dim after index, action is a dict
       self.store_transition(
           obsrv_all[[env_idx]].cpu(), {self.actor.net_name: torch.FloatTensor(action_all[[env_idx]])}, r_all[env_idx],
           obsrv_nxt_all[[env_idx]].cpu(), done, info
@@ -111,6 +112,7 @@ class SAC(BaseTraining):
     Args:
         batch (Batch): a batch of transitions.
     """
+
     action = batch.action[self.actor.net_name]
 
     # Updates the critic.
@@ -209,10 +211,10 @@ class SAC(BaseTraining):
         rollout_env (Union[BaseEnv, VecEnvBase]): _description_
     """
     env_policy: Actor = env.agent.policy
-    env_policy.update_policy(self.actor) #Update env with central ctrl
+    env_policy.update_policy(self.actor) # Update env with central ctrl
 
     if self.num_envs > 1:
-      for agent in self.agent_copy_list: #Update rollout_env with central ctrl
+      for agent in self.agent_copy_list: # Update rollout_env with central ctrl
         agent_policy: Actor = agent.policy
         agent_policy.update_policy(self.actor)
       rollout_env.set_attr("agent", self.agent_copy_list, value_batch=True)
@@ -232,7 +234,7 @@ class SAC(BaseTraining):
     if self.cnt_eval_period >= self.eval_period or init_eval:
       print(f"Checks at sample step {self.cnt_step}:")
       self.update_eval_agent(env, rollout_env) # After collecting experiences
-      self.cnt_eval_period = 0  # Resets counter.
+      self.cnt_eval_period = 0  # Reset counter
       eval_results: dict = eval_callback(
           env=env, rollout_env=rollout_env, value_fn=self.value,
           fig_path=os.path.join(self.figure_folder, f"{self.cnt_step}.png")
@@ -253,13 +255,14 @@ class SAC(BaseTraining):
     Args:
         eval_results (dict): evaluation results.
     """
+
     metric = eval_results[self.eval_metric] if self.eval_max else -eval_results[self.eval_metric]
     save_current = False
     if self.cnt_step >= self.min_steps_b4_opt:
       if self.leaderboard.qsize() < self.save_top_k:
         self.leaderboard.put((metric, self.cnt_step))
         save_current = True
-      elif metric > self.leaderboard.queue[0][0]:  # overwrite
+      elif metric > self.leaderboard.queue[0][0]:  # Overwrite
         # Remove the one has the minimum metric.
         # cnt_step (int) to track policy,critic pair on leaderboard
         _, step_remove = self.leaderboard.get()

@@ -630,6 +630,7 @@ class ISAACSTrainer(BaseTraining):
         Computes the critic's value estimate for the current observation and action.
         
         Combines control and disturbance actions into a single tensor and passes it to the critic.
+        
         Args:
             obsrv: Current observation array.
             append: Optional additional information appended to the critic.
