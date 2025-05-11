@@ -115,6 +115,10 @@ class MLP(nn.Module):
 
 
 def tie_weights(src, trg):
+  """
+  Shares weights between two modules. This is useful for sharing weights between two networks, e.g., in a twinned Q-network.
+  """
+  
   assert type(src) is type(trg)
   trg.weight = src.weight
   trg.bias = src.bias
@@ -988,8 +992,24 @@ class Critic(BaseBlock):
 
 def build_network(cfg, cfg_arch, device: torch.device,
                   verbose: bool = True) -> Tuple[Dict[str, Critic], Dict[str, Actor]]:
+  """
+  Constructs and returns dictionaries of critics and actors based on the provided configuration.
+
+  Args:
+    cfg: Configuration object containing network settings.
+    cfg_arch: Architecture configuration object.
+    device: Torch device to place the networks on.
+    verbose: If True, enables model construction logging.
+
+  Returns:
+    A tuple containing:
+        - Dictionary of critics.
+        - Dictionary of actors.
+  """
+
   critics: Dict[str, Critic] = {}
   actors: Dict[str, Actor] = {}
+
   for idx in range(cfg.num_critics):
     cfg_critic = getattr(cfg, f"critic_{idx}")
     cfg_arch_critic = getattr(cfg_arch, f"critic_{idx}")
