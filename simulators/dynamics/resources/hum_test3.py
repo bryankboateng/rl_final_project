@@ -3,8 +3,12 @@ import pybullet_data
 import time
 import numpy as np
 from math import pi
-from humanoid import Humanoid  # your existing class
+from humanoid import Humanoid  
 
+"""
+Self-Written Humanoid Testing Pybullet Code 
+Via pybullet api datasheet: https://raw.githubusercontent.com/bulletphysics/bullet3/master/docs/pybullet_quickstartguide.pdf
+"""
 
 client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())

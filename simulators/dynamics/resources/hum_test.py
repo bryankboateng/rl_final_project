@@ -3,6 +3,12 @@ import time
 from math import pi
 from humanoid import Humanoid  # make sure this is your correct import
 
+
+"""
+Self-Written Humanoid Testing Pybullet Code 
+Via pybullet api datasheet: https://raw.githubusercontent.com/bulletphysics/bullet3/master/docs/pybullet_quickstartguide.pdf
+"""
+
 if __name__ == "__main__":
     client = p.connect(p.GUI)
     time.sleep(1.0)  # Allow GUI to fully initialize

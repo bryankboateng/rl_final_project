@@ -12,15 +12,15 @@ agent:
   gui_imaginary: false
   dt: 0.02
   apply_force: true # warning, currently this will also affect adversarial force
-  replace_adv_with_dr: true # if true, this will replace the adversarial force with dr force
+  replace_adv_with_dr: false # if true, this will replace the adversarial force with dr force
   force: 50
   force_scale: 1.0
   force_reset_time: 50
+  force_type: uniform
   force_info:
   link_name: 
   rotate_reset: true
   height_reset: both
-  force_type: bangbang
   force_random: true
   terrain: normal
   terrain_height: 0.1
@@ -81,8 +81,8 @@ agent:
   reset_criterion: failure
 
 solver:
-  device: cpu
-  rollout_env_device: cpu
+  device: cuda
+  rollout_env_device: cuda
   num_envs: 1
   num_actors: 1
   num_critics: 1
@@ -99,10 +99,10 @@ solver:
   # == logging ==
   use_wandb: true
   project_name: spirit-rl-pybullet
-  name: bust-task
+  name: bust-gameplay
   max_model: 20
   save_top_k: 10
-  out_folder: train_result/test_spirit_refactor/test_bust-task
+  out_folder: train_result/test_spirit_refactor/test_bust-gameplay
   # == hyperparameters of actors and critics ==
   critic_0:
     eval: false
@@ -147,10 +147,10 @@ solver:
     actor_type: max
     step: 2_500_000
     model_folder: train_result/isaacs_spirit/model
-    ctrl_type: performance # safety, performance, shield_value, shield_rollout
-    epsilon: -0.28
+    ctrl_type: shield_rollout # safety, performance, shield_value, shield_rollout
+    epsilon: -0.8
     gameplay_config: train_result/isaacs_spirit/config.yaml
-    gameplay_horizon: 300
+    gameplay_horizon: 50
   eval:   
     b4_learn: false
     metric: safety

@@ -88,10 +88,10 @@ python3 script/eval_rarl_batch.py \
   --ctrl_step 2500000 \
   --dstb_type adversary \
   --dstb_config train_result/test_spirit_refactor/test_bust-safety-2/config.yaml \
-  --dstb_step 1300000 \
+  --dstb_step 1100000 \
   --batch_path batch_1000_bust_1000.pkl \
   --index_range 0 99 \
-  --eval_horizon 1000 \
+  --eval_horizon 300 \
   --log \
   --log_name bust_safety_safety_chunk0 \
   --exp_name bust_validation
@@ -155,7 +155,8 @@ Each evaluation logs the **safe rate** — the percentage of runs that do not en
   * Actor & critic `update()` and critic `value()` implementations with other marked features identical to homework solutions and handouts.
 * Wrote `batch_combine.py` as a quick streamline way of combining valid batch states for consistent BUST experimentation.
 * Training and testing networks for Spirit, Go2 quadruped and pybullet humanoid.
-* Full PyBullet humanoid wrapper (written and tested but not used in final experiments)
+* Full PyBullet humanoid robot and dynamics wrapper inside simulators and simulators/dynamics (written and tested but not used in final experiments)
+* Note that all other code not mentioned or explicitly marked as self-implemented or written is fully derived from cited repositories
 
 ###  Integration:
 

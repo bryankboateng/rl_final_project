@@ -3,20 +3,23 @@ import pybullet_data
 import time
 import numpy as np
 from math import pi
-
-# Load your existing Humanoid class from file
 from humanoid import Humanoid
 
-# Connect to PyBullet and initialize simulation
+"""
+Self-Written Humanoid Testing Pybullet Code 
+Via pybullet api datasheet: https://raw.githubusercontent.com/bulletphysics/bullet3/master/docs/pybullet_quickstartguide.pdf
+"""
+
+
 client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(0, 0, -9.8, physicsClientId=client)
 
-# Instantiate the Humanoid
+
 humanoid = Humanoid(client)
 humanoid.reset([0, 0, 1.5])
 
-# Set an improved camera view
+
 p.resetDebugVisualizerCamera(
     cameraDistance=10,
     cameraYaw=45,
@@ -24,7 +27,7 @@ p.resetDebugVisualizerCamera(
     cameraTargetPosition=[0, 0, 1]
 )
 
-# Identify controllable joints (i.e., revolute joints)
+
 controllable_joints = []
 joint_sliders = {}
 
@@ -44,7 +47,7 @@ for idx in humanoid.joint_index:
     else:
         print(f"[Info] Skipping joint {joint_name} (type {joint_type})")
 
-# Simulate drop and wait
+
 p.resetBasePositionAndOrientation(
     humanoid.id, [0, 0, 4], p.getQuaternionFromEuler([1.57, 0, 0])
 )
@@ -52,7 +55,7 @@ for _ in range(240):
     p.stepSimulation()
     time.sleep(1. / 240.)
 
-# Control loop
+
 while p.isConnected():
     target_angles = []
     for idx in controllable_joints:
