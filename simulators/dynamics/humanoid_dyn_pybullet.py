@@ -9,6 +9,12 @@ import matplotlib.pyplot as plt
 from jaxlib.xla_extension import DeviceArray
 from scipy.spatial.transform import Rotation
 
+"""
+Self-Written HumanoidDynamics Pybullet Wrapper 
+Via pybullet api datasheet: https://raw.githubusercontent.com/bulletphysics/bullet3/master/docs/pybullet_quickstartguide.pdf
+and mimicing structure for Spirit and Go2 dynamics wrapper for pipelining. 
+"""
+
 class HumanoidDynamicsPybullet(BasePybulletDynamics):
     def __init__(self, config: Any, action_space: np.ndarray) -> None:
         self.dim_x = config.obs_dim["actor_0"] if isinstance(config.obs_dim, dict) else config.obs_dim
@@ -74,11 +80,11 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
 
         max_attempts = 10
         for attempt in range(max_attempts):
-            # --- Required reset criteria ---
+            # Required reset criteria
             criterion = getattr(self, 'reset_criterion', None)
             is_rollout_shielding_reset = kwargs.get("is_rollout_shielding_reset", False)
 
-            # === Set initial state ===
+            # Set initial state
             height = 4.0
             rotation = p.getQuaternionFromEuler([1.57, 0, 0])
 
@@ -87,7 +93,7 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
             self.initial_rotation = rotation
             self.initial_action = initial_action
 
-            # === Create or reset robot ===
+            # Create or reset robot
             if self.robot is None:
                 super().reset(**kwargs)
                 self.robot = Humanoid(self.client, height=height, orientation=rotation,
@@ -96,18 +102,18 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
             # Always reset to near standing position
             p.resetBasePositionAndOrientation(self.robot.id, [0, 0, height], rotation, physicsClientId=self.client)
 
-            # === Drop Pose ===
+            # Drop Pose
             self.robot.apply_position(np.zeros(19)) #defaults to basic drop pose
             p.setGravity(0, 0, self.gravity * 0.2, physicsClientId=self.client)
             for _ in range(100):
                 p.stepSimulation(physicsClientId=self.client)
             p.setGravity(0, 0, self.gravity, physicsClientId=self.client)
 
-            # === Apply initial action ===
+            # Apply initial action
 
             self.robot.apply_action(initial_action)
 
-            # === Build initial observation ===
+            # Build initial observation 
             base_state = self.robot.get_obs()
             if self.obsrv_list:
                 for o in self.obsrv_list:
@@ -121,7 +127,7 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
             if is_rollout_shielding_reset:
                 return
 
-            # === Check reset condition ===
+            # Check reset condition 
             safety = self.robot.safety_margin()
             target = self.robot.target_margin()
 
@@ -149,33 +155,33 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
 
     def get_random_joint_increment(self):
         return np.array([
-            # === Revolute joints ===
+            # Revolute joints 
             np.random.uniform(-0.5, 0.1),   # right_knee
             np.random.uniform(-0.5, 0.1),   # left_knee
             np.random.uniform(-0.6, 0.6),   # right_elbow
             np.random.uniform(-0.6, 0.6),   # left_elbow
 
-            # === Spherical joints: right_hip (roll, pitch, yaw) ===
+            # Spherical joints: right_hip (roll, pitch, yaw)
             np.random.uniform(-np.pi/3, np.pi/3),
             np.random.uniform(-np.pi/6, np.pi/6),
             np.random.uniform(-np.pi/3, np.pi/3),
 
-            # === right_ankle ===
+            # right_ankle
             np.random.uniform(-np.pi/6, np.pi/6),
             np.random.uniform(-np.pi/6, np.pi/6),
             np.random.uniform(-np.pi/6, np.pi/6),
 
-            # === left_hip ===
+            # left_hip
             np.random.uniform(-np.pi/3, np.pi/3),
             np.random.uniform(-np.pi/6, np.pi/6),
             np.random.uniform(-np.pi/3, np.pi/3),
 
-            # === left_ankle ===
+            # left_ankle 
             np.random.uniform(-np.pi/6, np.pi/6),
             np.random.uniform(-np.pi/6, np.pi/6),
             np.random.uniform(-np.pi/6, np.pi/6),
 
-            # === chest ===
+            # chest
             np.random.uniform(-np.pi/12, np.pi/12),  # roll (limited sway)
             np.random.uniform(-np.pi/6, np.pi/6),    # pitch (moderate lean)
             np.random.uniform(-np.pi/6, np.pi/6),    # yaw (twist)
@@ -190,18 +196,18 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
         adversary: Optional[np.ndarray] = None, **kwargs
     ) -> Tuple[np.ndarray, np.ndarray]:
 
-        # === Update observation buffer ===
+        # Update observation buffer
         if self.obs_sequence:
             self.obs_sequence.pop()
             self.obs_sequence.insert(0, list(self.robot.get_obs()))
             assert len(self.obs_sequence) == self.obs_sequence_length
 
-        # === Apply control directly ===
+        # Apply control directly 
         # print("ctrl", control)
         # print("adv", adversary)
         self.robot.apply_action(control)
 
-        # === Adversarial force application ===
+
         if adversary is not None and not self.replace_adv_with_dr:
             if self.reset_count % 2 == 1 and self.synthetic_symmetrical_dstb and self.dstb_array:
                 adversary = self.dstb_array.pop(0)
@@ -210,10 +216,10 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
         else:
             self._apply_force()
 
-        # === Physics update ===
+
         p.stepSimulation(physicsClientId=self.client)
 
-        # === Visualization ===
+
         if self.gui:
             if adversary is not None and not self.replace_adv_with_dr:
                 if self.adv_debug_line_id is not None:
@@ -234,7 +240,7 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
         elif self.gui_imaginary:
             self.render()
 
-        # === Rebuild observation ===
+
         base_state = self.robot.get_obs()
         if self.obsrv_list:
             for o in self.obsrv_list:
@@ -247,7 +253,7 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
         self.cnt += 1
         self.robot.cnt = self.cnt
 
-        # === Return depending on adversarial type ===
+
         if adversary is not None:
             if self.replace_adv_with_dr:
                 if self.force != 0:
@@ -297,7 +303,7 @@ class HumanoidDynamicsPybullet(BasePybulletDynamics):
 
         robot_id, client_id = self.robot.get_ids()
 
-        # === Match resetDebugVisualizerCamera view ===
+
         cam_target = [0, 0, 1.5]
         cam_distance = 100
         cam_yaw = 45

@@ -28,6 +28,13 @@
 # 7.         Elbow_Joint_State  <       0.0  - 0.05
 # 8.         Elbow_Joint_State  >       3.14 + 0.05
 
+
+"""
+Self-Written Humanoid Base Pybullet Code 
+Via pybullet api datasheet: https://raw.githubusercontent.com/bulletphysics/bullet3/master/docs/pybullet_quickstartguide.pdf
+and mimicing structure for Spirit and Go2 robot for pipelining. 
+"""
+
 import numpy as np
 import pybullet as p
 import os
@@ -42,7 +49,7 @@ class Humanoid:
     def __init__(self, client, height=1.5, orientation=None, env_type=None, payload_max=0, timer=None, cnt=None, **kwargs):
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.client = client
-        robot_path = "/Users/bboat/Desktop/rl_final_project/simulators/dynamics/resources/humanoid/humanoid.urdf" #"/User/bboat/Desktop/rl_final_project/simulators/dynamics/resources/humanoid/humanoid.urdf"
+        robot_path = "simulators/dynamics/resources/humanoid/humanoid.urdf" 
         self.id = p.loadURDF(robot_path, basePosition=[0, 0, 1], baseOrientation=p.getQuaternionFromEuler([1.57, 0, 0]), useFixedBase=False)
         self.type = "sim"
         self.dim_x = kwargs.get("dim_x", 17)
@@ -218,7 +225,7 @@ class Humanoid:
                     "jointIndex": idx,
                     "controlMode": p.POSITION_CONTROL,
                     "targetPosition": quat,
-                    "force": [500, 500, 500],  # Tunable per joint
+                    "force": [500, 500, 500], 
                     "physicsClientId": self.client
                 }
                 if use_gains:
@@ -257,7 +264,7 @@ class Humanoid:
         
         # For some reason, spherical joints in sim follow a different order
 
-        # === Assemble observation ===
+
         # obs = np.concatenate([
         #     base_lin_vel,             # [3]
         #     base_ang_vel,             # [3]
