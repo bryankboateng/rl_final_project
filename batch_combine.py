@@ -2,6 +2,11 @@ import argparse
 import pickle
 import os
 
+
+"""
+Explicitly wrote this mini script to efficiently coombine valid batch states for BUST experiments
+"""
+
 def load_pickle(path):
     with open(path, "rb") as f:
         return pickle.load(f)

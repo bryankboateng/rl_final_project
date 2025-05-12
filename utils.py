@@ -27,6 +27,50 @@ from simulators import BaseEnv, BaseZeroSumEnv
 import pickle
 
 
+def get_bellman_update(
+    mode: str, batch_size: int, q1_nxt: torch.Tensor, q2_nxt: torch.Tensor, non_final_mask: torch.Tensor,
+    reward: torch.Tensor, g_x: torch.Tensor, l_x: torch.Tensor, binary_cost: torch.Tensor, gamma: float,
+    terminal_type: Optional[str] = None
+):
+  # Conservative target Q values: if the control policy we want to learn is to maximize, we take the minimum of the two
+  # Q values. Otherwise, we take the maximum.
+  if mode == 'risk':
+    target_q = torch.max(q1_nxt, q2_nxt).view(-1)
+  elif (mode == 'reach-avoid' or mode == 'safety' or mode == 'performance'):
+    target_q = torch.min(q1_nxt, q2_nxt).view(-1)
+  else:
+    raise ValueError("Unsupported RL mode.")
+
+  y = torch.zeros(batch_size).float().to(q1_nxt)  # placeholder
+  final_mask = torch.logical_not(non_final_mask)
+  if mode == 'reach-avoid':
+    # V(s) = min{ g(s), max{ l(s), V(s') }}
+    # Q(s, u) = V( f(s,u) ) = main g(s'), max{ ell(s'), min_{u'} Q(s', u')}}
+    terminal_target = torch.min(l_x[non_final_mask], g_x[non_final_mask])
+    original_target = torch.min(g_x[non_final_mask], torch.max(l_x[non_final_mask], target_q))
+    y[non_final_mask] = (1.0-gamma) * terminal_target + gamma*original_target
+
+    if terminal_type == 'g':
+      y[final_mask] = g_x[final_mask]
+    elif terminal_type == 'all':
+      y[final_mask] = torch.min(l_x[final_mask], g_x[final_mask])
+    else:
+      raise ValueError("invalid terminal type")
+  elif mode == 'safety':
+    # V(s) = min{ g(s), V(s') }
+    # Q(s, u) = V( f(s,u) ) = min{ g(s'), max_{u'} Q(s', u') }
+    # normal state
+    y[non_final_mask] = ((1.0-gamma) * g_x[non_final_mask] + gamma * torch.min(g_x[non_final_mask], target_q))
+
+    # terminal state
+    y[final_mask] = g_x[final_mask]
+  elif mode == 'performance':
+    y = reward
+    y[non_final_mask] += gamma * target_q
+  elif mode == 'risk':
+    y = binary_cost  # y = 1 if it's a terminal state
+    y[non_final_mask] += gamma * target_q
+  return y
 
 def save_obj(obj, filename, protocol=None):
   if protocol is None:

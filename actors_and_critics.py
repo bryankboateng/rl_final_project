@@ -34,7 +34,7 @@ from abc import ABC, abstractmethod
 import os
 from torch.optim import Adam, AdamW
 from simulators.policy.base_policy import BasePolicy
-from utils import save_model, StepLRMargin
+from utils import save_model, StepLRMargin, get_bellman_update
 from torch.optim.lr_scheduler import StepLR
 from utils_implemented import *
 

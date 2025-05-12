@@ -153,6 +153,7 @@ Each evaluation logs the **safe rate** — the percentage of runs that do not en
 
   * `TwinnedQNetwork`, `GaussianPolicy`
   * Actor & critic `update()` and critic `value()` implementations with other marked features identical to homework solutions and handouts.
+* Wrote `batch_combine.py` as a quick streamline way of combining valid batch states for consistent BUST experimentation.
 * Training and testing networks for Spirit, Go2 quadruped and pybullet humanoid.
 * Full PyBullet humanoid wrapper (written and tested but not used in final experiments)
 
@@ -180,7 +181,6 @@ Safety On Raw Video:
 https://drive.google.com/file/d/1XTuGgMT8o4V22QE22zVVNw1adRKry31s/view?usp=sharing
 
 
-Here’s a clean `README.md`-style formatting for your acknowledgement and citation section:
 
 ---
 
@@ -189,8 +189,6 @@ Here’s a clean `README.md`-style formatting for your acknowledgement and citat
 We extend our sincere thanks to the **SafeRobotics Lab** for providing access to both the private repository and the **Go2 quadruped platform**. This support enabled us to validate the effectiveness of our **ISAACS** pipeline through real-world deployment of our trained networks.
 
 ## Citation
-
-If you use or reference our work or the ISAACS framework, please cite the following paper:
 
 ```bibtex
 @inproceedings{hsunguyen2023isaacs,
