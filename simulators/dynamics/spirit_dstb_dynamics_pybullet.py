@@ -27,13 +27,6 @@ class SpiritDstbDynamicsPybullet(BasePybulletDynamics):
     else:
       self.dim_x = config.obs_dim
 
-    self.abduction_min = -0.5
-    self.abduction_max = 0.5
-    self.hip_min = 0.5
-    self.hip_max = 2.64
-    self.knee_min = 0.5
-    self.knee_max = 2.64
-
     self.initial_height = None
     self.initial_rotation = None
     self.initial_joint_value = None
@@ -60,11 +53,32 @@ class SpiritDstbDynamicsPybullet(BasePybulletDynamics):
     self.target_list = config.target_margin
     self.safety_list = config.safety_margin
 
+    self.action_type = config.action_type  # increment, center_sampling
+    self.action_center = config.action_center
+
+    #! NOTE: THIS IS NOT CORRECT FOR CENTER_SAMPLING, NEED TO READ THIS INFORMATION
+    # FROM THE YAML OF THE CTRL FOR L2 TRAINING
+    if self.action_type == "increment":
+      self.abduction_min = -0.5
+      self.abduction_max = 0.5
+      self.hip_min = 0.5
+      self.hip_max = 2.64
+      self.knee_min = 0.5
+      self.knee_max = 2.64
+    elif self.action_type == "center_sampling":
+      self.abduction_min = self.action_center[0] - 0.5
+      self.abduction_max = self.action_center[0] + 0.5
+      self.hip_min = self.action_center[1] - 0.5
+      self.hip_max = self.action_center[1] + 0.5
+      self.knee_min = self.action_center[2] - 0.5
+      self.knee_max = self.action_center[2] + 0.5
+
     # self.reset()
 
   def reset(self, **kwargs):
     # rejection sampling until outside target set and safe set
     while True:
+      
       super().reset(**kwargs)
 
       if "performance" in kwargs.keys():
@@ -149,7 +163,7 @@ class SpiritDstbDynamicsPybullet(BasePybulletDynamics):
       # self.robot = Spirit(self.client, height, rotate, dim_x = self.dim_x-12, **kwargs)
       self.robot = Spirit(
           self.client, height, rotate, dim_x=self.dim_x, target_list=self.target_list, safety_list=self.safety_list,
-          **kwargs
+          action_type=self.action_type, center=self.action_center, **kwargs
       )
 
       if not is_rollout_shielding_reset:

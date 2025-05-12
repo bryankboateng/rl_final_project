@@ -475,7 +475,7 @@ class BaseBlock(ABC):
 
 
 ####### Design for ACTOR and CRITIC #######
-# Self-Implemented
+
 
 
 class Actor(BaseBlock, BasePolicy):
@@ -630,7 +630,7 @@ class Actor(BaseBlock, BasePolicy):
                 self.log_alpha_optimizer, step_size=self.lr_al_period, gamma=self.lr_al_decay
         )
 
-
+# Self-Implemented
     def update(
         self,
         q1: torch.Tensor,
@@ -725,16 +725,19 @@ class Actor(BaseBlock, BasePolicy):
         
         # Get deterministic action
         with torch.no_grad():
-           device=next(self.net.parameters()).device
-           obsrv_tensor = obsrv.clone().detach().to(device)
-           action = self.net(obsrv_tensor)
+            device = next(self.net.parameters()).device
+            if not isinstance(obsrv, torch.Tensor):
+                obsrv = torch.tensor(obsrv, dtype=torch.float32)
+            obsrv_tensor = obsrv.to(device)
+            action = self.net(obsrv_tensor)
+
         
         if isinstance(action, torch.Tensor):
            action = action.cpu().numpy()
         
         return action, {"status": "success"}
 
-
+# Self-Implemented
     def sample(
         self,
         obsrv: Union[np.ndarray, torch.Tensor],
@@ -869,7 +872,7 @@ class Critic(BaseBlock):
                     return True
             return False
 
-
+# Self-Implemented
     def update(
         self,
         q1: torch.Tensor,
@@ -880,7 +883,7 @@ class Critic(BaseBlock):
         reward: torch.Tensor,
         g_x: torch.Tensor,
         l_x: torch.Tensor,
-        binary_cost: torch.Tensor,
+        binary_cost: torch.Tensor,entropy_motives: torch.Tensor,
 
     ) -> float:
         """
@@ -910,7 +913,8 @@ class Critic(BaseBlock):
            l_x=l_x,
            binary_cost=binary_cost,
            gamma=self.gamma)
-
+        if self.mode == 'performance':
+            target_q[non_final_mask] += self.gamma * entropy_motives #What the heck is entropy_motives?
         # Compute MSE loss
         loss_q1 = F.mse_loss(q1.view(-1), target_q)
         loss_q2 = F.mse_loss(q2.view(-1), target_q)
@@ -921,7 +925,7 @@ class Critic(BaseBlock):
         self.optimizer.step()
 
         return loss_q.item()
-
+# Self-Implemented
     def update_target(self):
         """
         Performs a polyak (soft) update of self.target params from self.net.

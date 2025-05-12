@@ -16,6 +16,7 @@ agent:
   force: 50
   force_scale: 1.0
   force_reset_time: 50
+  force_type: uniform
   force_info:
   link_name: 
   rotate_reset: true
@@ -47,6 +48,32 @@ agent:
       - [-0.1, 0.1]
       - [-0.1, 0.1]
       - [-0.05, 0.05]
+  action_type: center_sampling
+  action_center:
+    - 0.4
+    - 1.0
+    - 1.9
+    - 0.4
+    - 1.0
+    - 1.9
+    - -0.4
+    - 1.0
+    - 1.9
+    - -0.4
+    - 1.0
+    - 1.9
+  target_margin:
+    - corner_height
+    - toe_height
+    - body_ang_x
+    - body_ang_y
+    - body_ang_z
+    - x_dot
+    - y_dot
+    - z_dot
+  safety_margin:
+    - corner_height
+    - elbow_height
   obs_dim: 32
   obsrv_list:  &obsrv_list
     ctrl: null
@@ -54,8 +81,8 @@ agent:
   reset_criterion: failure
 
 solver:
-  device: cpu
-  rollout_env_device: cpu
+  device: cuda
+  rollout_env_device: cuda
   num_envs: 1
   num_actors: 1
   num_critics: 1
@@ -72,7 +99,7 @@ solver:
   # == logging ==
   use_wandb: true
   project_name: spirit-rl-pybullet
-  name: debug-bust-gameplay
+  name: bust-gameplay
   max_model: 20
   save_top_k: 10
   out_folder: train_result/test_spirit_refactor/test_bust-gameplay
@@ -121,7 +148,7 @@ solver:
     step: 2_500_000
     model_folder: train_result/isaacs_spirit/model
     ctrl_type: shield_rollout # safety, performance, shield_value, shield_rollout
-    epsilon: -0.28
+    epsilon: -0.8
     gameplay_config: train_result/isaacs_spirit/config.yaml
     gameplay_horizon: 50
   eval:   

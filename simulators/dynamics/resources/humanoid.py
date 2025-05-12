@@ -172,7 +172,7 @@ class Humanoid:
         """
         Apply separate controls for revolute and spherical joints with clipping and optional gains.
         """
-        # === Apply revolute joint controls ===
+        # Apply revolute joint controls
         if revolute_targets is not None:
             for i, idx in enumerate(self.revolute_joints):
                 info = p.getJointInfo(self.id, idx, physicsClientId=self.client)
@@ -203,7 +203,7 @@ class Humanoid:
 
                 p.setJointMotorControl2(**kwargs)
 
-        # === Apply spherical joint controls ===
+        #  spherical joint controls
         if spherical_targets is not None:
             for i, idx in enumerate(self.spherical_joints):
                 roll, pitch, yaw = spherical_targets[i]
@@ -230,7 +230,7 @@ class Humanoid:
 
 
     def get_obs(self):
-        # === Base (pelvis) state ===
+
         pos, orn = p.getBasePositionAndOrientation(self.id, physicsClientId=self.client)
         lin_vel, ang_vel = p.getBaseVelocity(self.id, physicsClientId=self.client)
         rotmat = Rotation.from_quat(orn).as_matrix()
@@ -240,11 +240,10 @@ class Humanoid:
         base_euler = p.getEulerFromQuaternion(orn)   # roll, pitch, yaw #base follows normal rpy convention
         base_z = pos[2]                               # Pelvis height
 
-        # === Joint positions ===
         joint_pos = self.get_joint_position()
 
 
-        # Parse joint quaternions
+
         quat_right_hip = joint_pos[0:4]
         angle_right_knee = joint_pos[4] # Revolute joints can be descirbed with a single angle
         quat_left_hip = joint_pos[9:13]

@@ -47,8 +47,20 @@ agent:
       - [-0.1, 0.1]
       - [-0.1, 0.1]
       - [-0.05, 0.05]
-  action_type: increment
+  action_type: center_sampling
   action_center:
+    - 0.4
+    - 1.0
+    - 1.9
+    - 0.4
+    - 1.0
+    - 1.9
+    - -0.4
+    - 1.0
+    - 1.9
+    - -0.4
+    - 1.0
+    - 1.9
   target_margin:
     - corner_height
     - toe_height
@@ -86,7 +98,7 @@ solver:
   # == logging ==
   use_wandb: true
   project_name: spirit-rl-pybullet
-  name: debug-bust-value-2
+  name: bust-value-2
   max_model: 20
   save_top_k: 10
   out_folder: train_result/test_spirit_refactor/test_bust-value-2
@@ -135,7 +147,7 @@ solver:
     step: 2_500_000
     model_folder: train_result/isaacs_spirit/model
     ctrl_type: shield_value # safety, performance, shield_value, shield_rollout
-    epsilon: -0.28
+    epsilon: -0.8 #from empirircal q-value runs safety,dstb pair
     gameplay_config: train_result/isaacs_spirit/config.yaml
     gameplay_horizon: 300
   eval:   
@@ -186,5 +198,5 @@ arch:
 eval:
   model_type: manual # highest, safest, manual
   step: 2_500_000 # the step to use if "manual" is chosen for model_type
-  eval_timeout: 300 # how long do we evaluate in real rollout env
+  eval_timeout: 1000 # how long do we evaluate in real rollout env
   imaginary_horizon: 300 # the horizon of the imaginary env

@@ -5,18 +5,18 @@ import numpy as np
 from math import pi
 from humanoid import Humanoid  # your existing class
 
-# === Initialize PyBullet GUI ===
+
 client = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(0, 0, -9.8, physicsClientId=client)
 p.configureDebugVisualizer(p.COV_ENABLE_GUI, 1)
-time.sleep(1)  # let GUI load fully
+time.sleep(1)  # let GUI load fully first to stop weird crash
 
-# === Instantiate and Reset Humanoid ===
+
 humanoid = Humanoid(client)
 humanoid.reset([0, 0, 1.5])
 
-# === Improved Camera View ===
+
 p.resetDebugVisualizerCamera(
     cameraDistance=10,
     cameraYaw=45,
@@ -24,7 +24,7 @@ p.resetDebugVisualizerCamera(
     cameraTargetPosition=[0, 0, 1.5]
 )
 
-# === Setup sliders for controllable joints ===
+
 controllable_joints = []
 joint_sliders = {}
 
@@ -42,7 +42,7 @@ for idx in humanoid.joint_index:
     else:
         print(f"[Info] Skipping non-controllable joint: {joint_name}")
 
-# === Optional: Drop pose to see stability ===
+
 p.resetBasePositionAndOrientation(
     humanoid.id, [0, 0, 4], p.getQuaternionFromEuler([1.57, 0, 0])
 )
@@ -50,7 +50,7 @@ for _ in range(240):
     p.stepSimulation()
     time.sleep(1. / 240.)
 
-# === Control loop ===
+
 while p.isConnected():
     target_angles = []
 

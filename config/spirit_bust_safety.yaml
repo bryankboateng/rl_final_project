@@ -47,8 +47,20 @@ agent:
       - [-0.1, 0.1]
       - [-0.1, 0.1]
       - [-0.05, 0.05]
-  action_type: increment
+  action_type: center_sampling
   action_center:
+    - 0.4
+    - 1.0
+    - 1.9
+    - 0.4
+    - 1.0
+    - 1.9
+    - -0.4
+    - 1.0
+    - 1.9
+    - -0.4
+    - 1.0
+    - 1.9
   target_margin:
     - corner_height
     - toe_height
@@ -68,8 +80,8 @@ agent:
   reset_criterion: failure
 
 solver:
-  device: cpu
-  rollout_env_device: cpu
+  device: cuda
+  rollout_env_device: cuda
   num_envs: 1
   num_actors: 1
   num_critics: 1
@@ -86,7 +98,7 @@ solver:
   # == logging ==
   use_wandb: true
   project_name: spirit-rl-pybullet
-  name: debug-bust-safety-2
+  name: bust-safety-2
   max_model: 20
   save_top_k: 10
   out_folder: train_result/test_spirit_refactor/test_bust-safety-2
@@ -186,5 +198,5 @@ arch:
 eval:
   model_type: manual # highest, safest, manual
   step: 2_500_000 # the step to use if "manual" is chosen for model_type
-  eval_timeout: 300 # how long do we evaluate in real rollout env
+  eval_timeout: 1000 # how long do we evaluate in real rollout env
   imaginary_horizon: 300 # the horizon of the imaginary env
