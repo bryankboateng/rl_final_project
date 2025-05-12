@@ -147,3 +147,15 @@ Each evaluation logs the **safe rate** — the percentage of runs that do not en
 
 ---
 
+Video Links for GO2 Demos
+
+Edited Video:
+https://drive.google.com/file/d/1gLsvo-I51N6GN33a277H7yl1Qcs5JBgk/view?usp=sharing
+
+Safety Off Raw Video:
+https://drive.google.com/file/d/1mbrLapKC6fo9hDSrobRyyZzUgsMs8cbh/view?usp=sharing
+
+Safety On Raw Video:
+https://drive.google.com/file/d/1XTuGgMT8o4V22QE22zVVNw1adRKry31s/view?usp=sharing
+
+
