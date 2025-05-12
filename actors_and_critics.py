@@ -8,9 +8,14 @@
 
 """
 Classes for building blocks for actors and critics.
+combination of implemented code and  integration from: https://github.com/SafeRoboticsLab/SimLabReal/blob/main/agent/model.py
 
-modified from: https://github.com/SafeRoboticsLab/SimLabReal/blob/main/agent/model.py
+Note that to facilitate smooth pipeline with other aspects of project in terms of code. A member of our three person team
+observed header information from methods in repository, provided header descriptions, and the other two members were responsible for 
+filling out the core code for implemented code. (Similar to code assignment format)
 """
+
+
 
 from typing import Optional, Union, Tuple, List
 import copy
@@ -171,9 +176,10 @@ def get_mlp_input(
 
   return obsrv, np_input, num_extra_dim
 
-########################################################
-# Twinned Q-network (Self-Implemented)
-########################################################
+###############################################################################################
+# Twinned Q-network (Self-Implemented) forward method using Homework 7 Critic_SAC as reference
+# get_mlp_input was integrated from cited repositories in README
+##############################################################################################
 
 class TwinnedQNetwork(nn.Module):
     """
@@ -248,9 +254,9 @@ class TwinnedQNetwork(nn.Module):
         return q1, q2
 
 
-########################################################
-# Gaussian Policy (Self-Implemented)
-########################################################
+####################################################################################
+# Gaussian Policy (Self-Implemented) based of SAC Homework solution and class handout
+#####################################################################################
 
 class GaussianPolicy(nn.Module):
     """
@@ -630,7 +636,12 @@ class Actor(BaseBlock, BasePolicy):
                 self.log_alpha_optimizer, step_size=self.lr_al_period, gamma=self.lr_al_decay
         )
 
-# Self-Implemented
+####################################################################################
+# Actor update (Self-Implemented) based of SAC Homework solution and class handout 
+# Note however that we did have to refer to repository and original SAC paper
+# for apparently training alpha (wasnt covered in class where we treated alpha as a constant not a learned param)
+#####################################################################################
+
     def update(
         self,
         q1: torch.Tensor,
@@ -737,7 +748,10 @@ class Actor(BaseBlock, BasePolicy):
         
         return action, {"status": "success"}
 
-# Self-Implemented
+######################################################################################################
+#  Actor Sample (Self-Implemented) based of SAC Homework solution and self-explanatory based of header
+######################################################################################################
+
     def sample(
         self,
         obsrv: Union[np.ndarray, torch.Tensor],
@@ -872,7 +886,12 @@ class Critic(BaseBlock):
                     return True
             return False
 
-# Self-Implemented
+#################################################################################################
+# Critic Update (Self-Implemented) based of SAC Homework solution and bellman update
+# equation in Gameplay filter paper. Note however that we did not know about the need for entropy
+# motives and had to refer to cited repository to fix key error.
+################################################################################################
+
     def update(
         self,
         q1: torch.Tensor,
@@ -925,7 +944,12 @@ class Critic(BaseBlock):
         self.optimizer.step()
 
         return loss_q.item()
-# Self-Implemented
+####################################################################################
+# Critic update target (Self-Implemented) based of SAC Homework solution
+# implemented soft_update in utils_implemented.py
+# (the idomatic weighted average tracking between target and duplicate network)
+#####################################################################################
+
     def update_target(self):
         """
         Performs a polyak (soft) update of self.target params from self.net.
@@ -957,9 +981,13 @@ class Critic(BaseBlock):
                 print(f"  => Restored target network from {path}")
         
 
-    ####################################################
-    # VALUE SIGNATURE (Self-Implemented)
-    ####################################################
+####################################################################################
+# Critic Value (Self-Implemented) based of SAC Homework solution and class handout
+# Note that unlike the homework solution and handout which only return one q value
+# we had to refer to repository for correct implemtnation which was the average of
+# double network
+#####################################################################################
+
     def value(
         self,
         obsrv: Union[np.ndarray, torch.Tensor],
